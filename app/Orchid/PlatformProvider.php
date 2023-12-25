@@ -39,6 +39,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Navigation')
                 ->route(config('platform.index')),
 
+            Menu::make('Product Categories')
+                ->icon('bs.card-list')
+                ->route('platform.products.categories'),
+                
             Menu::make('Sample Screen')
                 ->icon('bs.collection')
                 ->route('platform.example')
@@ -102,7 +106,16 @@ class PlatformProvider extends OrchidServiceProvider
         return [
             ItemPermission::group(__('System'))
                 ->addPermission('platform.systems.roles', __('Roles'))
-                ->addPermission('platform.systems.users', __('Users')),
+                ->addPermission('platform.systems.users', __('Users'))
+                ->addPermission('platform.systems.editor', __('Editor')),
+
+            ItemPermission::group(__('Products'))
+                ->addPermission('platform.products.index', __('Main'))
+                ->addPermission('platform.products.inventories', __('Inventories'))
+                ->addPermission('platform.products.categories', __('Categories'))
+                ->addPermission('platform.products.editor', __('Editor')),
+            
+            // ---
         ];
     }
 }
