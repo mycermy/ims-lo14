@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Product;
 use App\Orchid\Screens\Product\Category_EditScreen;
 use App\Orchid\Screens\Product\Category_ListScreen;
+use App\Orchid\Screens\Product\Product_EditScreen;
+use App\Orchid\Screens\Product\Product_ListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -36,3 +39,24 @@ Route::screen('product/categories/{category}/edit', Category_EditScreen::class)
     ->breadcrumbs(fn (Trail $trail, $category) => $trail
         ->parent('platform.products.categories')
         ->push(__($category->name), route('platform.products.categories.edit', $category)));
+
+// Platfrom > Products
+Route::screen('products', Product_ListScreen::class)
+    ->name('platform.products')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push(__('Products'), route('platform.products')));
+
+// Platfrom > Products > Create
+Route::screen('products/create', Product_EditScreen::class)
+    ->name('platform.products.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.products')
+        ->push(__('Create'), route('platform.products.create')));
+
+// Platfrom > Products > Edit
+Route::screen('products/{product}/edit', Product_EditScreen::class)
+    ->name('platform.products.edit')
+    ->breadcrumbs(fn (Trail $trail, $product) => $trail
+        ->parent('platform.products')
+        ->push(__($product->name), route('platform.products.edit', $product)));

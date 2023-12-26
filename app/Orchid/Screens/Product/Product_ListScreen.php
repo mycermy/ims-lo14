@@ -3,6 +3,7 @@
 namespace App\Orchid\Screens\Product;
 
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
@@ -12,7 +13,7 @@ use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
-class Category_ListScreen extends Screen
+class Product_ListScreen extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
@@ -22,7 +23,7 @@ class Category_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Category::filters()->paginate(),
+            'model' => Product::filters()->paginate(),
         ];
     }
 
@@ -33,7 +34,7 @@ class Category_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Product Categories';
+        return 'Products & Services';
     }
 
     /**
@@ -46,7 +47,7 @@ class Category_ListScreen extends Screen
         return [
             Link::make(__('Add'))
                 ->icon('bs.plus-circle')
-                ->route('platform.products.categories.create'),
+                ->route('platform.products.create'),
         ];
     }
 
@@ -58,14 +59,18 @@ class Category_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::table('model', [
+            Layout::table('model',[
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('parent_id')
-                ->filter(Relation::make()->fromModel(Category::class,'name'))
-                ->render(fn($target) => $target->parent->name ?? null),
-                TD::make('name'),
-                TD::make('created_by')->render(fn($target) => $target->createdBy->name),
-                TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
+                TD::make('category_id', 'Category')
+                    ->filter(Relation::make()->fromModel(Category::class,'name'))
+                    ->render(fn($target) => $target->category->name ?? null),
+                TD::make('code')->filter()->sort(),
+                TD::make('part_number', 'Part Number')->filter()->sort(),
+                TD::make('name')->filter()->sort(),
+                TD::make('sell_price', 'Sell Price')->alignRight(),
+                TD::make('compatible')->filter()->sort(),
+                // TD::make('created_by')->render(fn($target) => $target->createdBy->name),
+                // TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
                 ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor','platform.items.editor']))
                 ->width('10px')
@@ -76,6 +81,7 @@ class Category_ListScreen extends Screen
                         ->autoWidth()
                         ->render()
                 ),
+
             ]),
         ];
     }
@@ -100,7 +106,7 @@ class Category_ListScreen extends Screen
                     Link::make(__('Edit'))
                         ->icon('pencil')
                         // ->canSee($this->can('update'))
-                        ->route('platform.products.categories.edit', $target->slug),
+                        ->route('platform.products.edit', $target),
                 ]),
         ]);
     }

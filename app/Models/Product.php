@@ -10,21 +10,29 @@ use Orchid\Filters\Types\Like;
 use Orchid\Filters\Types\Where;
 use Orchid\Screen\AsSource;
 
-class Category extends Model
+class Product extends Model
 {
     use HasFactory, SoftDeletes, AsSource, Filterable;
 
     protected $guarded = ['id'];
     protected $perPage = 15;
 
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d',
+        'updated_at' => 'datetime:Y-m-d',
+        'sell_price' => 'decimal:2',
+    ];
+
     /**
      * @var array
      */
     protected $allowedFilters = [
         'id'    => Where::class,
-        'parent_id'    => Where::class,
+        'category_id'    => Where::class,
         'name'  => Like::class,
-        'slug'  => Like::class,
+        'code'  => Like::class,
+        'part_number'  => Like::class,
+        'compatible'  => Like::class,
         'created_by'  => Where::class,
         'updated_by'  => Where::class,
     ];
@@ -34,9 +42,11 @@ class Category extends Model
      */
     protected $allowedSorts = [
         'id',
-        'parent_id',
+        'category_id',
         'name',
-        'slug',
+        'code',
+        'part_number',
+        'compatible',
         'created_by',
         'updated_by',
     ];
@@ -46,35 +56,46 @@ class Category extends Model
     /**
      * @return BelongsTo
      */
-    public function parent() {
-        return $this->belongsTo(Category::class, 'parent_id');
-    }
-
-    /**
-     * @return HasMany
-     */
-    public function children(){
-        return $this->hasMany(Category::class, 'parent_id');
+    public function category(){
+        return $this->belongsTo(Category::class);
     }
 
     /**
      * @return BelongsTo
      */
-    public function createdBy() {
+    public function createdBy(){
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
      * @return BelongsTo
      */
-    public function updatedBy() {
+    public function updatedBy(){
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    /**
+     * @return BelongsToMany
+     */
+    // public function suppliers(){
+    //     return $this->belongsToMany(Supplier::class);
+    // }
+
+    /**
+     * @return BelongsToMany
+     */
+    // public function purchases(){
+    //     return $this->belongsToMany(Purchase::class, 'purchase_details')->withPivot('quantity', 'unit_price', 'sub_total');
+    // }
+
+    /**
+     * @return HasMany
+     */
+    // public function orderDetails(){
+    //     return $this->hasMany(OrderDetail::class);
+    // }
+
     // ===================== ORM Definition END ===================== //
 
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
+    
 }

@@ -39,8 +39,14 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Navigation')
                 ->route(config('platform.index')),
 
+            Menu::make('Products & Services')
+                ->icon('bs.card-list')
+                ->permission('platform.products.index')
+                ->route('platform.products'),
+                
             Menu::make('Product Categories')
                 ->icon('bs.card-list')
+                ->permission('platform.products.index')
                 ->route('platform.products.categories'),
                 
             Menu::make('Sample Screen')

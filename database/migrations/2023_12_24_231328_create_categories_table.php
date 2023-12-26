@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('created_by')->nullable()
+            $table->string('name');
+            $table->string('slug')->unique();
+            
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreignId('parent_id')->nullable()
+                  ->constrained('categories','id','dfk_cat_par_id')
+                  ->cascadeOnUpdate()
+                  ->cascadeOnDelete();
+            $table->foreignId('created_by')->default(1)
                   ->constrained('users','id','dfk_cat_cre_by')
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
@@ -21,16 +31,6 @@ return new class extends Migration
                   ->constrained('users','id','dfk_cat_upd_by')
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
-            $table->foreignId('parent_id')->nullable()
-                  ->constrained('categories','id','dfk_cat_par_id')
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
-                  
-            $table->string('name');
-            $table->string('slug')->unique();
-
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 
