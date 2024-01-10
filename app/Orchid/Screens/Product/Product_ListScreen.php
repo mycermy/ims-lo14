@@ -4,14 +4,20 @@ namespace App\Orchid\Screens\Product;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
+use Orchid\Support\Facades\Toast;
 
 class Product_ListScreen extends Screen
 {
@@ -48,6 +54,11 @@ class Product_ListScreen extends Screen
             Link::make(__('Add'))
                 ->icon('bs.plus-circle')
                 ->route('platform.products.create'),
+
+            ModalToggle::make('Express Add')
+                ->modal('xpressAddModal')
+                ->method('store')
+                ->icon('bs.window')
         ];
     }
 
@@ -83,6 +94,29 @@ class Product_ListScreen extends Screen
                 ),
 
             ]),
+
+            Layout::modal('xpressAddModal', Layout::rows([
+                Relation::make('product.category_id')
+                    ->fromModel(Category::class, 'name')
+                    ->title('Product Category')
+                    ->horizontal(),
+            
+                TextArea::make('product.name')
+                    ->title('Product Name')
+                    ->rows('3')
+                    ->required()
+                    ->horizontal(),
+                
+                Input::make('product.code')
+                    ->title('Product Code')
+                    ->required()
+                    ->horizontal(),
+                
+                Input::make('product.sell_price')
+                    ->title('Selling Price')
+                    ->required()
+                    ->horizontal(), 
+            ]))->title('Create new product/service.'),
         ];
     }
 
@@ -109,5 +143,26 @@ class Product_ListScreen extends Screen
                         ->route('platform.products.edit', $target),
                 ]),
         ]);
+    }
+
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(Request $request, Product $product)
+    {
+        $request->validate([
+            'product.code' => [
+                'required',
+                Rule::unique(Product::class,'code')
+            ]
+        ]);
+        
+        $product->fill($request->get('product'));
+        $product->fill(['name' => strtoupper($request->input('product.name'))]);
+        $product->fill(['created_by' => auth()->id()]);
+
+        $product->save();
+
+        Toast::info(__('Product was saved.'));
     }
 }

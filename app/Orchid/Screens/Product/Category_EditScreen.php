@@ -17,7 +17,7 @@ use Orchid\Support\Facades\Toast;
 
 class Category_EditScreen extends Screen
 {
-    public $category;
+    public ?Category $category = null;
     /**
      * Fetch data to be displayed on the screen.
      *

@@ -19,7 +19,7 @@ use Orchid\Support\Facades\Toast;
 
 class Product_EditScreen extends Screen
 {
-    public $product;
+    public ?Product $product = null;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -81,8 +81,9 @@ class Product_EditScreen extends Screen
                         ->title('Product Category')
                         ->horizontal(),
                     
-                    Input::make('product.name')
+                    TextArea::make('product.name')
                         ->title('Product Name')
+                        ->rows('3')
                         ->required()
                         ->horizontal(),
                     
@@ -104,7 +105,7 @@ class Product_EditScreen extends Screen
                     
                     TextArea::make('product.compatible')
                         ->title('Product Compatible')
-                        ->rows('7')
+                        ->rows('6')
                         ->horizontal(),
                     
                     Switcher::make('product.is_nonstock')

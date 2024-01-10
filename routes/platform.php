@@ -104,4 +104,4 @@ Route::screen('/examples/cards', ExampleCardsScreen::class)->name('platform.exam
 //Route::screen('idea', Idea::class, 'platform.screens.idea');
 
 // ... other routes
-require __DIR__ . '/platform_product.php';
+require __DIR__ . '/project/product.php';
