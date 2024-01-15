@@ -3,6 +3,7 @@
 use App\Models\Product;
 use App\Orchid\Screens\Product\Category_EditScreen;
 use App\Orchid\Screens\Product\Category_ListScreen;
+use App\Orchid\Screens\Product\DeletedProduct_ListScreen;
 use App\Orchid\Screens\Product\Product_EditScreen;
 use App\Orchid\Screens\Product\Product_ListScreen;
 use Illuminate\Support\Facades\Route;
@@ -60,3 +61,11 @@ Route::screen('products/{product}/edit', Product_EditScreen::class)
     ->breadcrumbs(fn (Trail $trail, $product) => $trail
         ->parent('platform.products')
         ->push(__($product->name), route('platform.products.edit', $product)));
+
+// Platfrom > Products
+Route::screen('deleted/products', DeletedProduct_ListScreen::class)
+    ->name('platform.deleted.products')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.products')
+        ->push(__('Deleted'), route('platform.deleted.products')));
+
