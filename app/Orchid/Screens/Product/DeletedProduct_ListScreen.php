@@ -20,7 +20,7 @@ use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
-class Product_ListScreen extends Screen
+class DeletedProduct_ListScreen extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
@@ -30,7 +30,7 @@ class Product_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Product::filters()->paginate(),
+            'model' => Product::onlyTrashed()->filters()->paginate(),
         ];
     }
 
@@ -51,16 +51,7 @@ class Product_ListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [
-            Link::make(__('Add'))
-                ->icon('bs.plus-circle')
-                ->route('platform.products.create'),
-
-            ModalToggle::make('Express Add')
-                ->modal('xpressAddModal')
-                ->method('store')
-                ->icon('bs.window')
-        ];
+        return [];
     }
 
     /**
@@ -95,29 +86,6 @@ class Product_ListScreen extends Screen
                 ),
 
             ]),
-
-            Layout::modal('xpressAddModal', Layout::rows([
-                Relation::make('product.category_id')
-                    ->fromModel(Category::class, 'name')
-                    ->title('Product Category')
-                    ->horizontal(),
-            
-                TextArea::make('product.name')
-                    ->title('Product Name')
-                    ->rows('3')
-                    ->required()
-                    ->horizontal(),
-                
-                Input::make('product.code')
-                    ->title('Product Code')
-                    ->required()
-                    ->horizontal(),
-                
-                Input::make('product.sell_price')
-                    ->title('Selling Price')
-                    ->required()
-                    ->horizontal(), 
-            ]))->title('Create new product/service.'),
         ];
     }
 
@@ -143,13 +111,14 @@ class Product_ListScreen extends Screen
                         // ->canSee($this->can('update'))
                         ->route('platform.products.edit', $target),
 
-                    Button::make(__('Delete'))
-                        ->icon('bs.trash3')
-                        ->confirm(__('Once the product is deleted, all of its resources and data will be permanently deleted. Before deleting your product, please download any data or information that you wish to retain.'))
-                        ->method('remove', [
+                    Button::make(__('Restore'))
+                        ->icon('bs.recycle')
+                        ->confirm(__('Selected product to be retore.'))
+                        ->method('restore', [
                             'id' => $target->id,
                         ])
-                        ->canSee(!$target->trashed()),
+                        ->canSee($target->trashed()),
+                    //
                 ]),
         ]);
     }
@@ -157,29 +126,11 @@ class Product_ListScreen extends Screen
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request, Product $product)
+    public function restore(Request $request): void
     {
-        $request->validate([
-            'product.code' => [
-                'required',
-                Rule::unique(Product::class,'code')
-            ]
-        ]);
-        
-        $product->fill($request->get('product'));
-        $product->fill(['name' => strtoupper($request->input('product.name'))]);
-        $product->fill(['created_by' => auth()->id()]);
+        $productToRestore = Product::withTrashed()->findOrFail($request->get('id'));
+        $productToRestore->restore();
 
-        $product->save();
-
-        Toast::info(__('Product was saved.'));
-    }
-
-    public function remove(Request $request): void
-    {
-        $productToRemove = Product::findOrFail($request->get('id'));
-        $productToRemove->delete();
-
-        Toast::info(__('Contact was removed'));
+        Toast::info(__('Product/Service was restored'));
     }
 }
