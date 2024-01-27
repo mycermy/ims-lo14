@@ -75,12 +75,14 @@ class Product_ListScreen extends Screen
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('category_id', 'Category')
                     ->filter(Relation::make()->fromModel(Category::class,'name'))
-                    ->render(fn($target) => $target->category->name ?? null),
+                    ->render(fn($target) => $target->category->name ?? null)
+                    ->width('auto'),
                 TD::make('code')->filter()->sort(),
                 TD::make('part_number', 'Part Number')->filter()->sort(),
-                TD::make('name')->filter()->sort(),
+                TD::make('name')->filter()->sort()->width('auto'),
+                TD::make('quantity')->alignRight(),
                 TD::make('sell_price', 'Sell Price')->alignRight(),
-                TD::make('compatible')->filter()->sort(),
+                TD::make('compatible')->filter()->sort()->width('auto'),
                 // TD::make('created_by')->render(fn($target) => $target->createdBy->name),
                 // TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
