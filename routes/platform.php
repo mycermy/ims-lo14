@@ -105,4 +105,5 @@ Route::screen('/examples/cards', ExampleCardsScreen::class)->name('platform.exam
 
 // ... other routes
 require __DIR__ . '/project/product.php';
+require __DIR__ . '/project/stockadjustment.php';
 require __DIR__ . '/project/contact.php';

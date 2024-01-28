@@ -22,7 +22,7 @@ class Category_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Category::filters()->paginate(),
+            'model' => Category::withCount('products')->filters()->paginate(),
         ];
     }
 
@@ -64,6 +64,7 @@ class Category_ListScreen extends Screen
                 ->filter(Relation::make()->fromModel(Category::class,'name'))
                 ->render(fn($target) => $target->parent->name ?? null),
                 TD::make('name'),
+                TD::make('products_count')->alignCenter(),
                 TD::make('created_by')->render(fn($target) => $target->createdBy->name),
                 TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
