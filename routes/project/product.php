@@ -62,7 +62,7 @@ Route::screen('products/{product}/edit', Product_EditScreen::class)
         ->parent('platform.products')
         ->push(__($product->name), route('platform.products.edit', $product)));
 
-// Platfrom > Products
+// Platfrom > Products > Recycle Bin
 Route::screen('deleted/products', DeletedProduct_ListScreen::class)
     ->name('platform.deleted.products')
     ->breadcrumbs(fn (Trail $trail) => $trail

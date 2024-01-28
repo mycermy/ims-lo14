@@ -182,6 +182,6 @@ class Product_ListScreen extends Screen
         $productToRemove = Product::findOrFail($request->get('id'));
         $productToRemove->delete();
 
-        Toast::info(__('Contact was removed'));
+        Toast::info(__('Product was removed'));
     }
 }

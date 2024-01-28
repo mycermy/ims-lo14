@@ -71,6 +71,13 @@ class Category extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    /**
+     * @return HasMany
+     */
+    public function products(){
+        return $this->hasMany(Product::class);
+    }
+
     // ===================== ORM Definition END ===================== //
 
     public function getRouteKeyName()
