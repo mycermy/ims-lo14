@@ -67,8 +67,8 @@ class StockAdjustment_ViewScreen extends Screen
     public function layout(): iterable
     {
         $number = StockAdjustment::max('id') + 1;
-        $refid = make_reference_id('ADJ', $number);
-        $harini = now()->toDateString(); //dd($harini);
+        // $refid = make_reference_id('ADJ', $number);
+        // $harini = now()->toDateString(); //dd($harini);
         return [
             Layout::rows([
                 Group::make([

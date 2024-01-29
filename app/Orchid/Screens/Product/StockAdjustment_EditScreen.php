@@ -98,9 +98,10 @@ class StockAdjustment_EditScreen extends Screen
                     //
                     DateTimer::make('stockAdjustment.date')
                         ->title('Date')
+                        ->format('d M Y')
+                        // ->serverFormat()
                         ->required()
                         ->value($harini)
-                        // ->serverFormat()
                         ->allowInput()
                         ->horizontal(),
                     //
@@ -108,7 +109,8 @@ class StockAdjustment_EditScreen extends Screen
                 // Layout::rows([
                     TextArea::make('stockAdjustment.note')
                         ->title('Note (If Needed)')
-                        ->rows(3),
+                        ->rows(3)
+                        ->horizontal(),
                     //
                     Matrix::make('adjustedProduct')
                         ->title('Adjusted Products')

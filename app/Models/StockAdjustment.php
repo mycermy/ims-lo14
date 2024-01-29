@@ -40,8 +40,8 @@ class StockAdjustment extends Model
         });
     }
 
-    // guna casts
-    // public function getDateAttribute($value) {
-    //     return Carbon::parse($value)->format('d M Y');
-    // }
+    // guna casts pun boleh tapi berguna pada input dalam page edit
+    public function getDateAttribute($value) {
+        return Carbon::parse($value)->format('d M Y');
+    }
 }
