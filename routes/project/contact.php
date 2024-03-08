@@ -33,11 +33,11 @@ Route::screen('contacts/create', Contact_EditScreen::class)
         ->push(__('Create'), route('platform.contacts.create')));
 
 // Platfrom > Contacts > Edit
-Route::screen('contacts/{contact}/edit', Contact_EditScreen::class)
+Route::screen('contacts/{contact?}/edit', Contact_EditScreen::class)
     ->name('platform.contacts.edit')
     ->breadcrumbs(fn (Trail $trail, $contact) => $trail
         ->parent('platform.contacts')
-        ->push(__($contact->name), route('platform.contacts.edit', $contact)));
+        ->push(__($contact->name), route('platform.contacts.edit')));
 
 // Platfrom > Contacts > Deleted
 Route::screen('deleted/contacts', DeletedContact_ListScreen::class)

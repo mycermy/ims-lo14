@@ -86,6 +86,7 @@ class StockAdjustment_EditScreen extends Screen
         $number = StockAdjustment::max('id') + 1;
         $refid = make_reference_id('ADJ', $number);
         $harini = now()->toDateString(); //dd($harini);
+        
         return [
             Layout::rows([
                 Group::make([
@@ -141,9 +142,10 @@ class StockAdjustment_EditScreen extends Screen
     public function store(Request $request, StockAdjustment $stockAdjustment)
     {
         $stockAdjustment->fill($request->get('stockAdjustment'));
-        // $product->fill(['name' => strtoupper($request->input('product.name'))]);
-        $stockAdjustment->fill(['updated_by' => auth()->id()]);
-        
+        $stockAdjustment->fill([
+            'date' => Carbon::parse( $request->input('purchase.date'))->toDate(),
+            'updated_by' => auth()->id(),
+        ]);
         $stockAdjustment->save();
         
         $adjustedProducts = $request->get('adjustedProduct');

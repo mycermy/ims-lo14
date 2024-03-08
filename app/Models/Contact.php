@@ -88,4 +88,14 @@ class Contact extends Model
     }
 
     // ===================== ORM Definition END ===================== //
+
+    public function scopeCustomer($query)
+    {
+        $query->where('type', Contact::TYPE_CUSTOMER);
+    }
+
+    public function scopeSupplier($query)
+    {
+        $query->where('type', Contact::TYPE_VENDOR);
+    }
 }
