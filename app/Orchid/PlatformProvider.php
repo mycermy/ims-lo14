@@ -39,6 +39,34 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Navigation')
                 ->route(config('platform.index')),
 
+            Menu::make('Products & Services')
+                ->icon('bs.card-list')
+                ->list([
+                    Menu::make('Product Categories')->route('platform.products.categories'),
+                    Menu::make('Product List')->route('platform.products'),
+                    Menu::make('Stock Adjustments')->route('platform.products.stockadjustments'),
+                ])
+                ->permission('platform.products.index'),
+                
+            Menu::make('Contacts')
+                ->icon('bs.card-list')
+                ->permission('platform.contacts.index')
+                ->route('platform.contacts'),
+                
+            Menu::make('Addresses')
+                ->icon('bs.card-list')
+                ->permission('platform.contacts.index')
+                ->route('platform.contacts.addresses'),
+                
+            Menu::make('Recycle Bin')
+                ->icon('bs.trash')
+                ->list([
+                    Menu::make('Contacts')->route('platform.deleted.contacts'),
+                    Menu::make('Products & Services')->route('platform.deleted.products'),
+                    // Menu::make('Product Categories')->route('platform.deleted.products.categories'),
+                ])
+                ->permission('platform.rbin.index'),
+
             Menu::make('Sample Screen')
                 ->icon('bs.collection')
                 ->route('platform.example')
@@ -102,7 +130,32 @@ class PlatformProvider extends OrchidServiceProvider
         return [
             ItemPermission::group(__('System'))
                 ->addPermission('platform.systems.roles', __('Roles'))
-                ->addPermission('platform.systems.users', __('Users')),
+                ->addPermission('platform.systems.users', __('Users'))
+                ->addPermission('platform.systems.editor', __('Editor')),
+
+            ItemPermission::group(__('Products'))
+                ->addPermission('platform.products.index', __('Main'))
+                ->addPermission('platform.products.inventories', __('Inventories'))
+                ->addPermission('platform.products.categories', __('Categories'))
+                ->addPermission('platform.products.editor', __('Editor')),
+
+            ItemPermission::group(__('Contacts'))
+                ->addPermission('platform.contacts.index', __('Main'))
+                // ->addPermission('platform.contacts.inventories', __('Inventories'))
+                // ->addPermission('platform.contacts.categories', __('Categories'))
+                ->addPermission('platform.contacts.editor', __('Editor')),
+
+            ItemPermission::group(__('Recycle Bin'))
+                ->addPermission('platform.rbin.index', __('Main'))
+                ->addPermission('platform.rbin.editor', __('Editor'))
+                ->addPermission('platform.rbin.delete', __('Delete'))
+                ->addPermission('platform.rbin.delete.contact', __('Delete Contact'))
+                ->addPermission('platform.rbin.delete.product', __('Delete Product/Service'))
+                ->addPermission('platform.rbin.restore', __('Restore'))
+                ->addPermission('platform.rbin.restore.contact', __('Restore Contact'))
+                ->addPermission('platform.rbin.restore.product', __('Restore Product/Service')),
+            
+            // ---
         ];
     }
 }
