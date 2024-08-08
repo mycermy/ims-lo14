@@ -71,30 +71,41 @@ class Product_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::table('model',[
+            Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('category_id', 'Category')
-                    ->filter(Relation::make()->fromModel(Category::class,'name'))
-                    ->render(fn($target) => $target->category->name ?? null)
-                    ->width('auto'),
-                TD::make('code')->filter()->sort(),
+                    ->filter(Relation::make()->fromModel(Category::class, 'name'))
+                    ->render(fn ($target) => $target->category->name ?? null)
+                    ->width('auto')
+                    ->class('text-break'),
+                TD::make('code')->filter()->sort()
+                    ->render(
+                        function ($target) {
+                            if ($target->code) {
+                                return Link::make($target->code)
+                                    ->route('platform.product.hist', $target);
+                            } else {
+                                return null;
+                            }
+                        }
+                    ),
                 TD::make('part_number', 'Part Number')->filter()->sort(),
-                TD::make('name')->filter()->sort()->width('auto'),
+                TD::make('name')->filter()->sort()->width('auto')->class('text-break'),
                 TD::make('quantity')->alignRight(),
                 TD::make('sell_price', 'Sell Price')->alignRight(),
                 TD::make('compatible')->filter()->sort()->width('auto'),
                 // TD::make('created_by')->render(fn($target) => $target->createdBy->name),
                 // TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
-                ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor','platform.items.editor']))
-                ->width('10px')
-                ->render(
-                    fn ($target) =>
-                    $this->getTableActions($target)
-                        ->alignCenter()
-                        ->autoWidth()
-                        ->render()
-                ),
+                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn ($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
 
             ]),
 
@@ -103,22 +114,22 @@ class Product_ListScreen extends Screen
                     ->fromModel(Category::class, 'name')
                     ->title('Product Category')
                     ->horizontal(),
-            
+
                 TextArea::make('product.name')
                     ->title('Product Name')
                     ->rows('3')
                     ->required()
                     ->horizontal(),
-                
+
                 Input::make('product.code')
                     ->title('Product Code')
                     ->required()
                     ->horizontal(),
-                
+
                 Input::make('product.sell_price')
                     ->title('Selling Price')
                     ->required()
-                    ->horizontal(), 
+                    ->horizontal(),
             ]))->title('Create new product/service.'),
         ];
     }
@@ -135,10 +146,10 @@ class Product_ListScreen extends Screen
             DropDown::make()
                 ->icon('three-dots-vertical')
                 ->list([
-                    // Link::make(__('View'))
-                    //     ->icon('eye')
-                    //     // ->canSee($this->can('view'))
-                    //     ->route('platform.sales.customers.view', $target),
+                    Link::make(__('View'))
+                        ->icon('eye')
+                        // ->canSee($this->can('view'))
+                        ->route('platform.product.hist', $target),
 
                     Link::make(__('Edit'))
                         ->icon('pencil')
@@ -164,10 +175,10 @@ class Product_ListScreen extends Screen
         $request->validate([
             'product.code' => [
                 'required',
-                Rule::unique(Product::class,'code')
+                Rule::unique(Product::class, 'code')
             ]
         ]);
-        
+
         $product->fill($request->get('product'));
         $product->fill(['name' => strtoupper($request->input('product.name'))]);
         $product->fill(['created_by' => auth()->id()]);

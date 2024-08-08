@@ -95,6 +95,20 @@ class Product extends Model
     //     return $this->hasMany(OrderDetail::class);
     // }
 
+    /**
+     * @return HasMany
+     */
+    public function purchaseDetails(){
+        return $this->hasMany(PurchaseDetail::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function adjustedProducts(){
+        return $this->hasMany(AdjustedProduct::class);
+    }
+
     // ===================== ORM Definition END ===================== //
 
     

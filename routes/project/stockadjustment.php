@@ -18,32 +18,34 @@ use Tabuna\Breadcrumbs\Trail;
 */
 
 // Platfrom > Products > Stock Adjustments
-Route::screen('products/stockadjustments', StockAdjustment_ListScreen::class)
+Route::screen('product/stockadjustments', StockAdjustment_ListScreen::class)
     ->name('platform.products.stockadjustments')
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.products')
         ->push(__('Stock Adjustments'), route('platform.products.stockadjustments')));
 
 // Platfrom > Products > Stock Adjustments > Create
-Route::screen('products/stockadjustments/create', StockAdjustment_EditScreen::class)
+Route::screen('product/stockadjustments/create', StockAdjustment_EditScreen::class)
     ->name('platform.products.stockadjustments.create')
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.products.stockadjustments')
         ->push(__('Create'), route('platform.products.stockadjustments.create')));
 
 // Platfrom > Products > Stock Adjustments > Edit
-Route::screen('products/stockadjustments/{stockAdjustment}/edit', StockAdjustment_EditScreen::class)
+Route::screen('product/stockadjustments/{stockAdjustment?}/edit', StockAdjustment_EditScreen::class)
     ->name('platform.products.stockadjustments.edit')
     ->breadcrumbs(fn (Trail $trail, $stockAdjustment) => $trail
         ->parent('platform.products.stockadjustments')
-        ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.edit', $stockAdjustment)));
+        ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.edit')));
+        // ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.edit', $stockAdjustment)));
 
 // Platfrom > Products > Stock Adjustments > View
-Route::screen('products/stockadjustments/{stockAdjustment}/view', StockAdjustment_ViewScreen::class)
+Route::screen('product/stockadjustments/{stockAdjustment?}/view', StockAdjustment_ViewScreen::class)
     ->name('platform.products.stockadjustments.view')
     ->breadcrumbs(fn (Trail $trail, $stockAdjustment) => $trail
         ->parent('platform.products.stockadjustments')
-        ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.view', $stockAdjustment)));
+        ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.view')));
+        // ->push(__($stockAdjustment->reference), route('platform.products.stockadjustments.view', $stockAdjustment)));
 
 // // Platfrom > Products > Recycle Bin
 // Route::screen('deleted/products', DeletedProduct_ListScreen::class)

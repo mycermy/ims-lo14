@@ -12,6 +12,9 @@ class StockAdjustment extends Model
 {
     use HasFactory, AsSource, Filterable;
 
+    public const TYPE_ADD = 'add';
+    public const TYPE_SUB = 'sub';
+
     // protected $table = 'adjustments';
     protected $guarded = ['id'];
     protected $withCount = ['adjustedProducts'];
@@ -40,8 +43,9 @@ class StockAdjustment extends Model
         });
     }
 
-    // guna casts
-    // public function getDateAttribute($value) {
-    //     return Carbon::parse($value)->format('d M Y');
-    // }
+    // guna casts pun boleh tapi berguna pada input dalam page edit
+    public function getDateAttribute($value) {
+        return Carbon::parse($value)->format('d M Y');
+    }
+
 }

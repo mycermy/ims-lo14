@@ -18,6 +18,11 @@ class CustomerFactory extends Factory
     {
         return [
             //
+            'type' => \App\Models\Contact::TYPE_CUSTOMER,
+            'name' => fake()->name(),
+            'email' => fake()->freeEmail(),
+            'phone' => fake()->e164PhoneNumber(),
+            'website' => fake()->domainName(),
         ];
     }
 }

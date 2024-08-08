@@ -18,6 +18,8 @@ class ProductFactory extends Factory
     {
         return [
             //
+            'name' => fake()->jobTitle(),
+            'code' => fake()->countryCode().fake()->languageCode(),
         ];
     }
 }

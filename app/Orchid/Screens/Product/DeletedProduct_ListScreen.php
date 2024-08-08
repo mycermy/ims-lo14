@@ -41,7 +41,7 @@ class DeletedProduct_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Products & Services';
+        return 'Deleted Products & Services';
     }
 
     /**

@@ -37,7 +37,8 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Get Started')
                 ->icon('bs.book')
                 ->title('Navigation')
-                ->route(config('platform.index')),
+                ->route(config('platform.index'))
+                ->divider(),
 
             Menu::make('Products & Services')
                 ->icon('bs.card-list')
@@ -46,17 +47,31 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Product List')->route('platform.products'),
                     Menu::make('Stock Adjustments')->route('platform.products.stockadjustments'),
                 ])
-                ->permission('platform.products.index'),
+                ->permission('platform.products.index')
+                ->title('Products Management Module')
+                ->divider(),
+
+            Menu::make('Purchases')
+                ->icon('bs.card-list')
+                ->list([
+                    Menu::make('Bills')->route('platform.purchases'),
+                    Menu::make('Purchase Returns')->route('platform.purchases.return'),
+                ])
+                ->permission('platform.purchases.index')
+                ->title('Purchases Management Module')
+                ->divider(),
                 
             Menu::make('Contacts')
                 ->icon('bs.card-list')
                 ->permission('platform.contacts.index')
-                ->route('platform.contacts'),
+                ->route('platform.contacts')
+                ->title('CRM Module'),
                 
             Menu::make('Addresses')
                 ->icon('bs.card-list')
                 ->permission('platform.contacts.index')
-                ->route('platform.contacts.addresses'),
+                ->route('platform.contacts.addresses')
+                ->divider(),
                 
             Menu::make('Recycle Bin')
                 ->icon('bs.trash')
@@ -65,34 +80,35 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Products & Services')->route('platform.deleted.products'),
                     // Menu::make('Product Categories')->route('platform.deleted.products.categories'),
                 ])
-                ->permission('platform.rbin.index'),
-                
-            Menu::make('Sample Screen')
-                ->icon('bs.collection')
-                ->route('platform.example')
-                ->badge(fn () => 6),
-
-            Menu::make('Form Elements')
-                ->icon('bs.card-list')
-                ->route('platform.example.fields')
-                ->active('*/examples/form/*'),
-
-            Menu::make('Overview Layouts')
-                ->icon('bs.window-sidebar')
-                ->route('platform.example.layouts'),
-
-            Menu::make('Grid System')
-                ->icon('bs.columns-gap')
-                ->route('platform.example.grid'),
-
-            Menu::make('Charts')
-                ->icon('bs.bar-chart')
-                ->route('platform.example.charts'),
-
-            Menu::make('Cards')
-                ->icon('bs.card-text')
-                ->route('platform.example.cards')
+                ->permission('platform.rbin.index')
                 ->divider(),
+                
+            // Menu::make('Sample Screen')
+            //     ->icon('bs.collection')
+            //     ->route('platform.example')
+            //     ->badge(fn () => 6),
+
+            // Menu::make('Form Elements')
+            //     ->icon('bs.card-list')
+            //     ->route('platform.example.fields')
+            //     ->active('*/examples/form/*'),
+
+            // Menu::make('Overview Layouts')
+            //     ->icon('bs.window-sidebar')
+            //     ->route('platform.example.layouts'),
+
+            // Menu::make('Grid System')
+            //     ->icon('bs.columns-gap')
+            //     ->route('platform.example.grid'),
+
+            // Menu::make('Charts')
+            //     ->icon('bs.bar-chart')
+            //     ->route('platform.example.charts'),
+
+            // Menu::make('Cards')
+            //     ->icon('bs.card-text')
+            //     ->route('platform.example.cards')
+            //     ->divider(),
 
             Menu::make(__('Users'))
                 ->icon('bs.people')
@@ -139,10 +155,12 @@ class PlatformProvider extends OrchidServiceProvider
                 ->addPermission('platform.products.categories', __('Categories'))
                 ->addPermission('platform.products.editor', __('Editor')),
 
+            ItemPermission::group(__('Purchases'))
+                ->addPermission('platform.purchases.index', __('Main'))
+                ->addPermission('platform.purchases.editor', __('Editor')),
+
             ItemPermission::group(__('Contacts'))
                 ->addPermission('platform.contacts.index', __('Main'))
-                // ->addPermission('platform.contacts.inventories', __('Inventories'))
-                // ->addPermission('platform.contacts.categories', __('Categories'))
                 ->addPermission('platform.contacts.editor', __('Editor')),
 
             ItemPermission::group(__('Recycle Bin'))

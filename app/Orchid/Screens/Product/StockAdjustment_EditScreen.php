@@ -15,6 +15,7 @@ use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -86,6 +87,7 @@ class StockAdjustment_EditScreen extends Screen
         $number = StockAdjustment::max('id') + 1;
         $refid = make_reference_id('ADJ', $number);
         $harini = now()->toDateString(); //dd($harini);
+        
         return [
             Layout::rows([
                 Group::make([
@@ -98,9 +100,10 @@ class StockAdjustment_EditScreen extends Screen
                     //
                     DateTimer::make('stockAdjustment.date')
                         ->title('Date')
+                        ->format('d M Y')
+                        // ->serverFormat()
                         ->required()
                         ->value($harini)
-                        // ->serverFormat()
                         ->allowInput()
                         ->horizontal(),
                     //
@@ -108,7 +111,8 @@ class StockAdjustment_EditScreen extends Screen
                 // Layout::rows([
                     TextArea::make('stockAdjustment.note')
                         ->title('Note (If Needed)')
-                        ->rows(3),
+                        ->rows(3)
+                        ->horizontal(),
                     //
                     Matrix::make('adjustedProduct')
                         ->title('Adjusted Products')
@@ -118,7 +122,10 @@ class StockAdjustment_EditScreen extends Screen
                             'id' => Input::make('id')->readonly()->type('hidden'),
                             'product_id' => Relation::make('product_id')->fromModel(Product::class,'name')->readonly()->searchColumns('name','code','part_number')->chunk(10)->required(),
                             'quantity' => Input::make('quantity')->type('number')->required(),
-                            'type' => Input::make('type')->required(),
+                            'type' => Select::make('type')->required()->options([
+                                StockAdjustment::TYPE_ADD => StockAdjustment::TYPE_ADD,
+                                StockAdjustment::TYPE_SUB => StockAdjustment::TYPE_SUB,
+                            ])->empty(),
                         ]),
                 // ]),
             ]),
@@ -139,9 +146,10 @@ class StockAdjustment_EditScreen extends Screen
     public function store(Request $request, StockAdjustment $stockAdjustment)
     {
         $stockAdjustment->fill($request->get('stockAdjustment'));
-        // $product->fill(['name' => strtoupper($request->input('product.name'))]);
-        $stockAdjustment->fill(['updated_by' => auth()->id()]);
-        
+        $stockAdjustment->fill([
+            'date' => Carbon::parse( $request->input('purchase.date'))->toDate(),
+            'updated_by' => auth()->id(),
+        ]);
         $stockAdjustment->save();
         
         $adjustedProducts = $request->get('adjustedProduct');

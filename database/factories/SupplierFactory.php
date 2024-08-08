@@ -18,6 +18,12 @@ class SupplierFactory extends Factory
     {
         return [
             //
+            'type' => \App\Models\Contact::TYPE_VENDOR,
+            'name' => fake()->company(),
+            'email' => fake()->freeEmail(),
+            'phone' => fake()->e164PhoneNumber(),
+            'website' => fake()->domainName(),
+            // 'location' => fake()->city(),
         ];
     }
 }
