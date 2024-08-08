@@ -16,7 +16,7 @@ class AdjustedProduct extends Model
     protected $with = ['product'];
 
     public function adjustment() {
-        return $this->belongsTo(StockAdjustment::class);
+        return $this->belongsTo(StockAdjustment::class, 'stock_adjustment_id');
     }
 
     public function product() {

@@ -27,8 +27,8 @@ return new class extends Migration
             $table->decimal('paid_amount', 20)->default(0.00);
             $table->decimal('due_amount', 20)->default(0.00);
             $table->string('status')->default('draf');
-            $table->string('payment_status')->default('Unpaid');
-            $table->string('payment_method')->default('others');
+            $table->string('payment_status')->default('unpaid');
+            // $table->string('payment_method')->default('others');
             $table->text('note')->nullable();
             $table->timestamps();
 

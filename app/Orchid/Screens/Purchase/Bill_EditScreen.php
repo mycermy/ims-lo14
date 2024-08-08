@@ -16,6 +16,8 @@ use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
@@ -63,7 +65,7 @@ class Bill_EditScreen extends Screen
             Button::make(__('Update'))
                 ->icon('bs.check-circle')
                 ->canSee($this->purchase->exists)
-                ->method('update'),
+                ->method('store'),
 
             Link::make(__('Cancel'))
                 ->icon('bs.x-circle')
@@ -80,7 +82,8 @@ class Bill_EditScreen extends Screen
     {
         $number = Purchase::max('id') + 1;
         $refid = make_reference_id('PR', $number);
-        $harini = now()->toDateString();
+        // $harini = now()->toDateString(); //dd($harini);
+        $harini = now()->format('d M Y'); //dd($harini);
 
         return [
             Layout::rows([
@@ -110,17 +113,31 @@ class Bill_EditScreen extends Screen
                         ->horizontal(),
                 ])->fullWidth(),
                 //
+                TextArea::make('purchase.note')
+                    ->title('Note (If Needed)')
+                    ->rows(3)
+                    ->horizontal(),
+                // 
                 Matrix::make('purchaseDetail')
                     ->title('Purchase Details')
                     ->removeableRows(false)
                     ->columns(['id', 'Product' => 'product_id', 'quantity', 'Unit Price' => 'unit_price', 'sub_total'])
                     ->fields([
                         'id' => Input::make('id')->readonly()->type('hidden'),
-                        'product_id' => Relation::make('product_id')->fromModel(Product::class,'name')->readonly()->searchColumns('name','code','part_number')->chunk(10)->required(),
+                        'product_id' => Relation::make('product_id')->fromModel(Product::class, 'name')->readonly()->searchColumns('name', 'code', 'part_number')->chunk(10)->required(),
                         'quantity' => Input::make('quantity')->type('number')->required(),
                         'unit_price' => Input::make('unit_price')->required(),
                         'sub_total' => Input::make('sub_total')->readonly(),
                     ]),
+                //
+                Select::make('purchase.status')
+                    ->title('Purchase Status')
+                    ->options([
+                        Purchase::STATUS_PENDING => Purchase::STATUS_PENDING,
+                        Purchase::STATUS_APPROVED => Purchase::STATUS_APPROVED,
+                    ])
+                    // ->empty('No select')
+                    ->horizontal(),
             ]),
         ];
     }
@@ -130,11 +147,16 @@ class Bill_EditScreen extends Screen
      */
     public function store(Request $request, Purchase $purchase)
     {
+        // kalo edit
+        if ($this->purchase->exists) {
+            $this->removeOldPurchaseDetails($purchase);
+        }
+        // 
         $supplier = Supplier::findOrFail($request->input('purchase.supplier_id'));
 
         $purchase->fill($request->get('purchase'));
         $purchase->fill([
-            'date' => Carbon::parse( $request->input('purchase.date'))->toDate(),
+            'date' => Carbon::parse($request->input('purchase.date'))->toDate(),
             'supplier_name' => $supplier->name,
             'updated_by' => auth()->id(),
         ]);
@@ -154,18 +176,74 @@ class Bill_EditScreen extends Screen
             $purchase->purchaseDetails()->save($newPurchaseDetail);
 
             // Update stock quantity in the product
-            $product = Product::findOrFail($purchaseDetail['product_id']);
-            $product->update([
-                'quantity' => $product->quantity + $purchaseDetail['quantity']
-            ]);
+            if ($request->input('purchase.status') == Purchase::STATUS_APPROVED) {
+                $this->updateStock($purchaseDetail['product_id'], $purchaseDetail['quantity'], 'add');
+            }
             //
             $totalAmount += $subTotal;
         }
 
-        $purchase->fill(['total_amount' => $totalAmount])->save();
+        $purchase->fill(['total_amount' => $totalAmount, 'due_amount' => $totalAmount])->save();
 
         Toast::info(__('Purchase bill was saved.'));
 
         return redirect()->route('platform.purchases');
+    }
+
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeOldPurchaseDetails(Purchase $purchase)
+    {
+        $oldPurchaseStatus = $purchase->status ?? null;
+
+        $oldPurchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+        foreach ($oldPurchaseDetails as $oldPurchaseDetail) {
+            // Update stock quantity in the product -> reverse
+            if ($oldPurchaseStatus == Purchase::STATUS_APPROVED) {
+                $this->updateStock($oldPurchaseDetail->product_id, $oldPurchaseDetail->quantity, 'sub');
+            }
+
+            $oldPurchaseDetail->delete();
+        }
+    }
+
+    public function approve(Purchase $purchase)
+    {
+        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+        foreach ($purchaseDetails as $purchaseDetail) {
+            // Product::where('id', $product->product_id)
+            //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
+            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+        }
+
+        Purchase::findOrFail($purchase->id)
+            ->update([
+                'status' => Purchase::STATUS_APPROVED,
+                'updated_by' => auth()->user()->id
+            ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Purchase has been approved!');
+    }
+
+    public function updateStock($productID, $purchaseQty, $type)
+    {
+        $product = Product::findOrFail($productID);
+        $updateQty = 0;
+
+        if ($type == 'add') {
+            $updateQty = $product->quantity + $purchaseQty;
+        } else if ($type == 'sub') {
+            $updateQty = $product->quantity - $purchaseQty;
+        }
+
+        // Update stock quantity in the product
+        $product->update([
+            'quantity' => $updateQty
+        ]);
     }
 }

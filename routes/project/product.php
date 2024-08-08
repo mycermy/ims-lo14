@@ -6,6 +6,7 @@ use App\Orchid\Screens\Product\Category_ListScreen;
 use App\Orchid\Screens\Product\DeletedProduct_ListScreen;
 use App\Orchid\Screens\Product\Product_EditScreen;
 use App\Orchid\Screens\Product\Product_ListScreen;
+use App\Orchid\Screens\Product\ProductHistory_ListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -61,6 +62,13 @@ Route::screen('products/{product?}/edit', Product_EditScreen::class)
     ->breadcrumbs(fn (Trail $trail, $product) => $trail
         ->parent('platform.products')
         ->push(__($product->name), route('platform.products.edit')));
+
+// Platfrom > Product > History
+Route::screen('products/{product?}/view', ProductHistory_ListScreen::class)
+    ->name('platform.product.hist')
+    ->breadcrumbs(fn (Trail $trail, $product) => $trail
+        ->parent('platform.products')
+        ->push(__($product->name), route('platform.product.hist')));
 
 // Platfrom > Products > Recycle Bin
 Route::screen('deleted/products', DeletedProduct_ListScreen::class)

@@ -12,6 +12,11 @@ class PurchasePayment extends Model
 {
     use HasFactory, AsSource, Filterable;
 
+    public const STATUS_OVERDUE = 'overdue';
+    public const STATUS_UNPAID = 'unpaid';
+    public const STATUS_PARTIALLY_PAID = 'partially_paid';
+    public const STATUS_PAID = 'paid';
+
     protected $guarded = ['id'];
 
     public function purchase() {

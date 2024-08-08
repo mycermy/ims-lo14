@@ -15,6 +15,7 @@ use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -121,7 +122,10 @@ class StockAdjustment_EditScreen extends Screen
                             'id' => Input::make('id')->readonly()->type('hidden'),
                             'product_id' => Relation::make('product_id')->fromModel(Product::class,'name')->readonly()->searchColumns('name','code','part_number')->chunk(10)->required(),
                             'quantity' => Input::make('quantity')->type('number')->required(),
-                            'type' => Input::make('type')->required(),
+                            'type' => Select::make('type')->required()->options([
+                                StockAdjustment::TYPE_ADD => StockAdjustment::TYPE_ADD,
+                                StockAdjustment::TYPE_SUB => StockAdjustment::TYPE_SUB,
+                            ])->empty(),
                         ]),
                 // ]),
             ]),

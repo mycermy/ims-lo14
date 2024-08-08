@@ -12,6 +12,9 @@ class StockAdjustment extends Model
 {
     use HasFactory, AsSource, Filterable;
 
+    public const TYPE_ADD = 'add';
+    public const TYPE_SUB = 'sub';
+
     // protected $table = 'adjustments';
     protected $guarded = ['id'];
     protected $withCount = ['adjustedProducts'];

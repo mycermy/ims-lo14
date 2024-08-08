@@ -95,7 +95,17 @@ class StockAdjustment_ViewScreen extends Screen
             
 
             Layout::table('adjustedProduct',[
-                TD::make('product_id','Code')->render(fn($target) => $target->product->code ?? null),
+                TD::make('product_id', 'Code')
+                    ->render(
+                        function ($target) {
+                            if ($target->product->code) {
+                                return Link::make($target->product->code)
+                                    ->route('platform.product.hist', $target->product->id);
+                            } else {
+                                return null;
+                            }
+                        }
+                    ),
                 TD::make('product_id','Product')->render(fn($target) => $target->product->name ?? null),
                 TD::make('quantity', 'Adjust Qty')->alignCenter(),
                 TD::make('type')->alignCenter(),

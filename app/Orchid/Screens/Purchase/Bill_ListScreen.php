@@ -5,6 +5,8 @@ namespace App\Orchid\Screens\Purchase;
 use App\Models\Product;
 use Orchid\Screen\TD;
 use App\Models\Purchase;
+use App\Models\PurchaseDetail;
+use App\Models\PurchasePayment;
 use Orchid\Screen\Screen;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Link;
@@ -61,25 +63,50 @@ class Bill_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::table('model',[
-                TD::make('updated_at', 'Date'),
-                TD::make('reference'),
+            Layout::table('model', [
+                TD::make('status')->alignCenter()
+                    ->render(
+                        function ($target) {
+                            $class = ($target->status == Purchase::STATUS_APPROVED) ? 'text-bg-success text-white' : 'text-bg-danger';
+                            return Link::make($target->status)
+                                ->class($class . ' badge')
+                                ->route('platform.purchases.view', $target);
+                        }
+                    ),
+                TD::make('date'),
+                TD::make('reference')
+                    ->render(
+                        fn ($target) =>
+                        Link::make($target->reference)
+                            ->route('platform.purchases.view', $target)
+                    ),
                 TD::make('supplier_name', 'Supplier'),
-                TD::make('status')->alignCenter(),
                 TD::make('total_amount')->alignRight(),
                 TD::make('paid_amount')->alignRight(),
                 TD::make('due_amount')->alignRight(),
-                TD::make('payment_status')->alignCenter(),
-                TD::make('Actions')->alignCenter()
-                ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor','platform.items.editor']))
-                ->width('10px')
-                ->render(
-                    fn ($target) =>
-                    $this->getTableActions($target)
-                        ->alignCenter()
-                        ->autoWidth()
-                        ->render()
-                ),
+                TD::make('payment_status', 'Payment Status')->alignCenter()
+                    ->render(function ($target) {
+                        if ($target->payment_status == PurchasePayment::STATUS_PAID) {
+                            $button = 'text-bg-success text-white';
+                            // } else if ($target->created_at <= now() && $target->due_at >= now()) {
+                            //     $button = 'btn btn-warning';
+                        } else {
+                            $button = 'text-bg-danger';
+                        }
+                        //
+                        return Link::make($target->payment_status)->class($button . ' badge text-uppercase');
+                    }),
+
+                TD::make('actions')->alignCenter()
+                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn ($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
             ]),
         ];
     }
@@ -91,6 +118,8 @@ class Bill_ListScreen extends Screen
      */
     private function getTableActions($target): Group
     {
+        $allowEdit = !($target->status == Purchase::STATUS_APPROVED || $target->status == Purchase::STATUS_COMPLETED);
+
         return Group::make([
 
             DropDown::make()
@@ -103,18 +132,62 @@ class Bill_ListScreen extends Screen
 
                     Link::make(__('Edit'))
                         ->icon('pencil')
-                        // ->canSee($this->can('update'))
+                        ->canSee($allowEdit)
                         ->route('platform.purchases.edit', $target),
+
+                    Button::make(__('Approve'))
+                        ->icon('bag-check')
+                        ->confirm(__('You\'re about to approve this purchase.'))
+                        // ->canSee($this->can('update'))
+                        ->canSee($target->status == Purchase::STATUS_PENDING)
+                        ->method('approve'),
 
                     Button::make(__('Delete'))
                         ->icon('bs.trash3')
-                        ->confirm(__('Once the product is deleted, all of its resources and data will be permanently deleted. Before deleting your product, please download any data or information that you wish to retain.'))
+                        ->confirm(__('Once the product is deleted, all of its resources and data will be permanently deleted. 
+                            Before deleting your product, please download any data or information that you wish to retain.'))
+                        // ->canSee(!$target->trashed())
                         ->method('remove', [
                             'id' => $target->id,
-                        ])
-                        // ->canSee(!$target->trashed())
-                        ,
+                        ]),
                 ]),
+        ]);
+    }
+
+    public function approve(Purchase $purchase)
+    {
+        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+        foreach ($purchaseDetails as $purchaseDetail) {
+            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+        }
+
+        Purchase::findOrFail($purchase->id)
+            ->update([
+                'status' => Purchase::STATUS_APPROVED,
+                'updated_by' => auth()->user()->id
+            ]);
+
+        // send notification to purchase creator and approver
+
+        // 
+        Toast::info(__('Purchase has been approved.'));
+    }
+
+    public function updateStock($productID, $purchaseQty, $type)
+    {
+        $product = Product::findOrFail($productID);
+        $updateQty = 0;
+
+        if ($type == 'add') {
+            $updateQty = $product->quantity + $purchaseQty;
+        } else if ($type == 'sub') {
+            $updateQty = $product->quantity - $purchaseQty;
+        }
+
+        // Update stock quantity in the product
+        $product->update([
+            'quantity' => $updateQty
         ]);
     }
 
@@ -127,18 +200,8 @@ class Bill_ListScreen extends Screen
 
         // child
         foreach ($purchase->purchaseDetails as $existingPurchaseDetail) {
-            // get current stock
-            $product = Product::findOrFail($existingPurchaseDetail['product_id']);
             // rollback stock qty in product table
-            $newQty = $product->quantity - $existingPurchaseDetail['quantity'];
-            $product->update([
-                'quantity' => $newQty
-            ]);
-
-            // $existingAdjustedProduct->delete();
-
-            Toast::warning(__('Product Rollback. (- ' . $existingPurchaseDetail['quantity'] . ') => ' . $newQty . ' ' . $product->name));
-            
+            $this->updateStock($existingPurchaseDetail['product_id'], $existingPurchaseDetail['quantity'], 'sub');
         }
 
         // parent
@@ -147,5 +210,5 @@ class Bill_ListScreen extends Screen
         Toast::info(__('Purchase was deleted.'));
     }
     // 
-        
+
 }
