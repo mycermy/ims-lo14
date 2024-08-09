@@ -68,7 +68,12 @@ class StockAdjustment_ListScreen extends Screen
             Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('date'),
-                TD::make('reference'),
+                TD::make('reference')
+                ->render(
+                    fn($target) =>
+                    Link::make($target->reference)
+                        ->route('platform.products.stockadjustments.view', $target)
+                ),
                 TD::make('note')->width('auto'),
                 TD::make('adjusted_products_count', 'ProdCount')->alignCenter(),
                 TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),

@@ -85,25 +85,22 @@ class Bill_ViewScreen extends Screen
                         ->title('Reference')
                         // ->required()
                         // ->value($refid)
-                        ->disabled()
-                        ->horizontal(),
+                        ->disabled(),
                     //
                     DateTimer::make('purchase.date')
                         ->title('Date')
-                        ->format('d M Y')
+                        // ->format('d M Y')
                         // ->required()
                         // ->value($harini)
-                        ->disabled()
-                        ->horizontal(),
+                        ->disabled(),
                     // 
                     Relation::make('purchase.supplier_id')
                         ->title('Supplier')
                         ->fromModel(Contact::class, 'name')
-                        ->applyScope('supplier')
+                        // ->applyScope('supplier')
                         // ->searchColumns('name', 'phone', 'email')
                         // ->chunk(10)
-                        ->disabled()
-                        ->horizontal(),
+                        ->disabled(),
                     // 
                 ])->fullWidth(),
                 //

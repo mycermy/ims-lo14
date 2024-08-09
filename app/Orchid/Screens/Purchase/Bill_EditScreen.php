@@ -92,16 +92,14 @@ class Bill_EditScreen extends Screen
                         ->title('Reference')
                         ->required()
                         ->value($refid)
-                        ->disabled()
-                        ->horizontal(),
+                        ->disabled(),
                     //
                     DateTimer::make('purchase.date')
                         ->title('Date')
                         ->format('d M Y')
                         ->required()
                         ->value($harini)
-                        ->allowInput()
-                        ->horizontal(),
+                        ->allowInput(),
                     //
                     Relation::make('purchase.supplier_id')
                         ->title('Supplier')
@@ -109,8 +107,7 @@ class Bill_EditScreen extends Screen
                         ->applyScope('supplier')
                         ->searchColumns('name', 'phone', 'email')
                         ->chunk(10)
-                        ->required()
-                        ->horizontal(),
+                        ->required(),
                 ])->fullWidth(),
                 //
                 TextArea::make('purchase.note')
