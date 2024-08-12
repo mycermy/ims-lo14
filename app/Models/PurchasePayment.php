@@ -16,8 +16,21 @@ class PurchasePayment extends Model
     public const STATUS_UNPAID = 'unpaid';
     public const STATUS_PARTIALLY_PAID = 'partially_paid';
     public const STATUS_PAID = 'paid';
+    public const STATUS_OVERPAID = 'overpaid';
+
+    public const PAYMENT_CASH = 'cash';
+    public const PAYMENT_QRCODE = 'qr-code';
+    public const PAYMENT_BANK_TRANSFER = 'bank transfer';
+    public const PAYMENT_CREDIT_CARD = 'credit card';
+    public const PAYMENT_CHEQUE = 'cheque';
+    public const PAYMENT_OTHER = 'other';
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'date' => 'datetime:d M Y',
+        'amount' => 'decimal:2',
+    ];
 
     public function purchase() {
         return $this->belongsTo(Purchase::class, 'purchase_id', 'id');
@@ -30,6 +43,15 @@ class PurchasePayment extends Model
     // public function getAmountAttribute($value) {
     //     return $value / 100;
     // }
+
+    public static function boot() {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $number = PurchasePayment::max('id') + 1;
+            $model->reference = make_reference_id('PV', $number);
+        });
+    }
 
     public function getDateAttribute($value) {
         return Carbon::parse($value)->format('d M Y');

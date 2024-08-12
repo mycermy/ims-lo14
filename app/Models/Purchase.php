@@ -24,7 +24,7 @@ class Purchase extends Model
         'date' => 'datetime:d M Y',
         'created_at' => 'datetime:Y-m-d',
         'updated_at' => 'datetime:Y-m-d',
-        'sell_price' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     public function purchaseDetails() {
@@ -52,5 +52,11 @@ class Purchase extends Model
     public function scopeCompleted($query) {
         return $query->where('status', self::STATUS_COMPLETED);
     }
+    
+    // // 
+    // public function getRouteKeyName()
+    // {
+    //     return 'reference';
+    // }
     // 
 }

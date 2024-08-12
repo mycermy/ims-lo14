@@ -15,6 +15,13 @@ class PurchaseDetail extends Model
 
     protected $with = ['product'];
 
+    protected $casts = [
+        'date' => 'datetime:d M Y',
+        'unit_price' => 'decimal:2',
+        'sub_total' => 'decimal:2',
+        'product_tax_amount' => 'decimal:2',
+    ];
+
     public function product() {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }

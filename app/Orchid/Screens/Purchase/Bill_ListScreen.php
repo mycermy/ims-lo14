@@ -67,16 +67,19 @@ class Bill_ListScreen extends Screen
                 TD::make('status')->alignCenter()
                     ->render(
                         function ($target) {
-                            $class = ($target->status == Purchase::STATUS_APPROVED) ? 'text-bg-success text-white' : 'text-bg-danger';
+                            $class = ($target->status == Purchase::STATUS_APPROVED
+                                || ($target->status == Purchase::STATUS_COMPLETED && $target->payment_status == PurchasePayment::STATUS_PAID))
+                                ? 'text-bg-success text-white'
+                                : 'text-bg-danger';
                             return Link::make($target->status)
-                                ->class($class . ' badge')
+                                ->class($class . ' badge text-uppercase')
                                 ->route('platform.purchases.view', $target);
                         }
                     ),
                 TD::make('date'),
                 TD::make('reference')
                     ->render(
-                        fn ($target) =>
+                        fn($target) =>
                         Link::make($target->reference)
                             ->route('platform.purchases.view', $target)
                     ),
@@ -101,7 +104,7 @@ class Bill_ListScreen extends Screen
                     ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
                     ->width('10px')
                     ->render(
-                        fn ($target) =>
+                        fn($target) =>
                         $this->getTableActions($target)
                             ->alignCenter()
                             ->autoWidth()
@@ -129,6 +132,12 @@ class Bill_ListScreen extends Screen
                         ->icon('eye')
                         // ->canSee($this->can('view'))
                         ->route('platform.purchases.view', $target),
+
+                    Link::make(__('Add Payment'))
+                        ->icon('bs.plus-circle')
+                        // ->canSee($this->can('view'))
+                        ->canSee($this->showPaymentMenu($target))
+                        ->route('platform.purchases.payments.create', $target),
 
                     Link::make(__('Edit'))
                         ->icon('pencil')
@@ -208,6 +217,14 @@ class Bill_ListScreen extends Screen
         $purchase->delete();
 
         Toast::info(__('Purchase was deleted.'));
+    }
+
+    public function showPaymentMenu($target)
+    {
+        if ($target->status == Purchase::STATUS_APPROVED && $target->payment_status != PurchasePayment::STATUS_PAID) {
+            return true;
+        }
+        return false;
     }
     // 
 
