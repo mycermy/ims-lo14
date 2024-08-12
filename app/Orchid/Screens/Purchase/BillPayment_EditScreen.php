@@ -42,7 +42,10 @@ class BillPayment_EditScreen extends Screen
      */
     public function name(): ?string
     {
-        return $this->payment->exists ? 'Edit ' . $this->payment->reference : 'New Bill Payment';
+        return 'Bill: ' . $this->purchase->reference . ' >> ' .
+            ($this->payment->exists
+            ? 'Edit Payment: ' . $this->payment->reference
+            : 'New Bill Payment');
     }
 
     /**
@@ -65,7 +68,7 @@ class BillPayment_EditScreen extends Screen
 
             Link::make(__('Cancel'))
                 ->icon('bs.x-circle')
-                ->route('platform.purchases.view', $this->purchase),
+                ->route('platform.purchases.payments', $this->purchase),
         ];
     }
 
@@ -147,7 +150,7 @@ class BillPayment_EditScreen extends Screen
         //     $this->removeOldPurchaseDetails($purchase);
         // }
         // 
-        
+
         $request->validate([
             'payment.date' => 'required|date',
             'payment.reference' => 'required|string|max:255',
@@ -175,7 +178,7 @@ class BillPayment_EditScreen extends Screen
             $due_amount < 0 => PurchasePayment::STATUS_OVERPAID,
             default => PurchasePayment::STATUS_PAID,
         };
-        
+
         $purchase->update([
             'paid_amount' => $paid_amount,
             'due_amount' => $due_amount,
@@ -185,6 +188,6 @@ class BillPayment_EditScreen extends Screen
 
         Toast::info(__('Purchase Payment was saved.'));
 
-        return redirect()->route('platform.purchases.view', $purchase);
+        return redirect()->route('platform.purchases.payments', $purchase);
     }
 }

@@ -10,12 +10,11 @@ use App\Models\PurchasePayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
@@ -27,7 +26,6 @@ class Bill_ViewScreen extends Screen
 {
     public ?Purchase $purchase = null;
     public $purchaseDetail;
-    public $purchasePayment;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -38,7 +36,6 @@ class Bill_ViewScreen extends Screen
         return [
             'purchase' => $purchase,
             'purchaseDetail' => $purchase->purchaseDetails()->get(),
-            'purchasePayment' => $purchase->purchasePayments()->get(),
         ];
     }
 
@@ -49,7 +46,7 @@ class Bill_ViewScreen extends Screen
      */
     public function name(): ?string
     {
-        return $this->purchase->exists ? 'View ' . $this->purchase->reference : 'New Purchase Bill';
+        return 'Bill: ' . $this->purchase->reference;
     }
 
     /**
@@ -70,11 +67,6 @@ class Bill_ViewScreen extends Screen
             Link::make(__('Back'))
                 ->icon('bs.x-circle')
                 ->route('platform.purchases'),
-
-            Link::make(__('Add Payment'))
-                ->icon('bs.wallet2')
-                ->canSee($this->showPaymentMenu($this->purchase))
-                ->route('platform.purchases.payments.create', $this->purchase),
         ];
     }
 
@@ -90,6 +82,14 @@ class Bill_ViewScreen extends Screen
         $harini = now()->toDateString();
 
         return [
+            Layout::tabmenu([
+                Menu::make('Purchase Details')
+                    ->route('platform.purchases.view', $this->purchase),
+    
+                Menu::make('Payments')
+                    ->route('platform.purchases.payments', $this->purchase),
+            ]),
+
             Layout::rows([
                 Group::make([
                     Input::make('purchase.reference')
@@ -143,49 +143,7 @@ class Bill_ViewScreen extends Screen
                 TD::make('sub_total', 'Total')->alignRight(),
                 ]),//->title('Purchase Details'),
 
-            Layout::table('purchasePayment', [
-                TD::make('id', '#')->width(10)->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('date'),
-                TD::make('reference'),
-                TD::make('payment_method'),
-                TD::make('amount')->alignRight(),
-                TD::make('note'),
-
-                TD::make('actions')->alignCenter()
-                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
-                    ->width('120px')
-                    ->render(
-                        fn ($target) =>
-                        $this->getTableActions($target)
-                            ->alignCenter()
-                            // ->autoWidth()
-                            ->render()
-                    ),
-            ])->title('Purchase Payments'),
         ];
-    }
-
-    /**
-     * @param Model $model
-     *
-     * @return Group
-     */
-    private function getTableActions($target): Group
-    {
-        return Group::make([
-            Link::make(__(''))
-                ->icon('pencil')
-                ->route('platform.purchases.payments.edit', [$this->purchase, $target]),
-
-            Button::make(__(''))
-                ->icon('bs.trash3')
-                ->confirm(__('Once the product is deleted, all of its resources and data will be permanently deleted. 
-                    Before deleting your product, please download any data or information that you wish to retain.'))
-                // ->canSee(!$target->trashed())
-                ->method('removePayment', [
-                    'id' => $target->id,
-                ]),
-        ]);
     }
 
     public function approve(Purchase $purchase)
@@ -225,46 +183,5 @@ class Bill_ViewScreen extends Screen
         $product->update([
             'quantity' => $updateQty
         ]);
-    }
-
-    /**
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function removePayment(Request $request)
-    {
-        // rollback paid amount in purchase table
-        $purchasePayment = PurchasePayment::findOrFail($request->get('id'));
-        $purchase = $purchasePayment->purchase;
-
-        $paid_amount = $purchase->paid_amount - $purchasePayment->amount;
-
-        $due_amount = $purchase->due_amount + $purchasePayment->amount;
-
-        $payment_status = match (true) {
-            $due_amount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
-            $due_amount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $due_amount < 0 => PurchasePayment::STATUS_OVERPAID,
-            default => PurchasePayment::STATUS_PAID,
-        };
-
-        $purchase->update([
-            'paid_amount' => $paid_amount,
-            'due_amount' => $due_amount,
-            'payment_status' => $payment_status,
-            'status' => $payment_status != PurchasePayment::STATUS_PAID ? Purchase::STATUS_APPROVED : $purchase->status,
-        ]);
-
-        // parent
-        $purchasePayment->delete();
-
-        Toast::info(__('Purchase Payment was deleted.'));
-    }
-
-    public function showPaymentMenu($target)
-    {
-        if ($target->status == Purchase::STATUS_APPROVED && $target->payment_status != PurchasePayment::STATUS_PAID) {
-            return true;
-        }
-        return false;
     }
 }
