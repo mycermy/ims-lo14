@@ -1,11 +1,10 @@
 <?php
 
-use App\Orchid\Screens\Contact\Address_ListScreen;
-use App\Orchid\Screens\Contact\Contact_EditScreen;
 use App\Orchid\Screens\Contact\DeletedContact_ListScreen;
 use App\Orchid\Screens\Purchase\Bill_EditScreen;
 use App\Orchid\Screens\Purchase\Bill_ListScreen;
 use App\Orchid\Screens\Purchase\Bill_ViewScreen;
+use App\Orchid\Screens\Purchase\BillPayment_EditScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -42,11 +41,11 @@ Route::screen('purchases/{purchase?}/edit', Bill_EditScreen::class)
         ->push(__($purchase->reference), route('platform.purchases.edit')));
 
 // Platfrom > Purchases > View
-Route::screen('purchases/{purchase?}/view', Bill_ViewScreen::class)
+Route::screen('purchases/{purchase}/view', Bill_ViewScreen::class)
     ->name('platform.purchases.view')
     ->breadcrumbs(fn (Trail $trail, $purchase) => $trail
         ->parent('platform.purchases')
-        ->push(__($purchase->reference), route('platform.purchases.view')));
+        ->push(__($purchase->reference), route('platform.purchases.view', $purchase)));
 
 // Platfrom > Purchase Returns
 Route::screen('purchase-returns', Bill_ListScreen::class)
@@ -62,23 +61,32 @@ Route::screen('deleted/purchases', DeletedContact_ListScreen::class)
         ->parent('platform.purchases')
         ->push(__('Deleted'), route('platform.deleted.purchases')));
 
-// // Platfrom > Purchases > Purchase Item Details
-// Route::screen('purchases/billitems', Address_ListScreen::class)
-//     ->name('platform.contacts.addresses')
+// // Platfrom > Purchases > Payments
+// Route::screen('purchases/{purchase?}/payments', Bill_ListScreen::class)
+//     ->name('platform.purchases.payments')
 //     ->breadcrumbs(fn (Trail $trail) => $trail
-//         ->parent('platform.contacts')
-//         ->push(__('Addresses'), route('platform.contacts.addresses')));
+//         ->parent('platform.purchases.view')
+//         ->push(__('Payments'), route('platform.purchases.payments')));
 
-// // Platfrom > Products > Create
-// Route::screen('products/create', Product_EditScreen::class)
-//     ->name('platform.products.create')
-//     ->breadcrumbs(fn (Trail $trail) => $trail
-//         ->parent('platform.products')
-//         ->push(__('Create'), route('platform.products.create')));
+// Platfrom > Purchases > Payments > Create
+Route::screen('purchases/{purchase?}/create-payment', BillPayment_EditScreen::class)
+    ->name('platform.purchases.payments.create')
+    ->breadcrumbs(fn (Trail $trail, $purchase) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__('Create Payment'), route('platform.purchases.payments.create')));
 
-// // Platfrom > Products > Edit
-// Route::screen('products/{product}/edit', Product_EditScreen::class)
-//     ->name('platform.products.edit')
-//     ->breadcrumbs(fn (Trail $trail, $product) => $trail
-//         ->parent('platform.products')
-//         ->push(__($product->name), route('platform.products.edit', $product)));
+// Platfrom > Purchases > Payments > Edit
+Route::screen('purchases/{purchase?}/payments/{payment?}/edit', BillPayment_EditScreen::class)
+    ->name('platform.purchases.payments.edit')
+    ->breadcrumbs(fn (Trail $trail, $purchase, $payment) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__($payment->reference), route('platform.purchases.payments.edit')));
+
+// // Platfrom > Purchases > Payments > View
+// Route::screen('purchases/{purchase?}/payments/{payment?}/view', Bill_ViewScreen::class)
+//     ->name('platform.purchases.payments.view')
+//     ->breadcrumbs(fn (Trail $trail, $purchase, $payment) => $trail
+//         ->parent('platform.purchases', $purchase)
+//         ->push(__($payment->reference), route('platform.purchases.payments.view')));
+
+// //
