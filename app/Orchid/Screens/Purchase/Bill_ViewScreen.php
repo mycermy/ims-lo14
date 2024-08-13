@@ -165,7 +165,7 @@ class Bill_ViewScreen extends Screen
         // 
         Toast::info(__('Purchase has been approved.'));
 
-        return redirect()->route('platform.purchases');
+        return redirect()->route('platform.purchases.view', $this->purchase);
     }
 
     public function updateStock($productID, $purchaseQty, $type)

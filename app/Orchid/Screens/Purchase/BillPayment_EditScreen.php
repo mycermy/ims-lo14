@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Purchase;
 
 use App\Models\Purchase;
 use App\Models\PurchasePayment;
+use App\Rules\AmountNotExceedDue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
@@ -44,8 +45,8 @@ class BillPayment_EditScreen extends Screen
     {
         return 'Bill: ' . $this->purchase->reference . ' >> ' .
             ($this->payment->exists
-            ? 'Edit Payment: ' . $this->payment->reference
-            : 'New Bill Payment');
+                ? 'Edit Payment: ' . $this->payment->reference
+                : 'New Bill Payment');
     }
 
     /**
@@ -154,7 +155,12 @@ class BillPayment_EditScreen extends Screen
         $request->validate([
             'payment.date' => 'required|date',
             'payment.reference' => 'required|string|max:255',
-            'payment.amount' => 'required|numeric',
+            // 'payment.amount' => ['required', 'numeric', new AmountNotExceedDue($request->input('purchase.due_amount'))],
+            'payment.amount' => [
+                'required',
+                'numeric',
+                new AmountNotExceedDue($request->input('purchase.due_amount'), 'The payment amount should not exceed the due amount.')
+            ],
             'payment.note' => 'nullable|string|max:1000',
             'payment.purchase_id' => 'required',
             'payment.payment_method' => 'required|string|max:255',
