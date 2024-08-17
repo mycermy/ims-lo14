@@ -5,6 +5,12 @@ use App\Orchid\Screens\Purchase\Bill_EditScreen;
 use App\Orchid\Screens\Purchase\Bill_ListScreen;
 use App\Orchid\Screens\Purchase\Bill_ViewScreen;
 use App\Orchid\Screens\Purchase\BillPayment_EditScreen;
+use App\Orchid\Screens\Purchase\BillPayment_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturn_EditScreen;
+use App\Orchid\Screens\Purchase\BillReturn_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturnSingle_CreateScreen;
+use App\Orchid\Screens\Purchase\PurchasePayments_ListScreen;
+use App\Orchid\Screens\Purchase\PurchaseReturns_ListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -48,11 +54,32 @@ Route::screen('purchases/{purchase}/view', Bill_ViewScreen::class)
         ->push(__($purchase->reference), route('platform.purchases.view', $purchase)));
 
 // Platfrom > Purchase Returns
-Route::screen('purchase-returns', Bill_ListScreen::class)
-    ->name('platform.purchases.return')
+Route::screen('purchase-returns', PurchaseReturns_ListScreen::class)
+    ->name('platform.purchasereturns')
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.purchases')
-        ->push(__('Purchase Returns'), route('platform.purchases.return')));
+        ->push(__('Purchase Returns'), route('platform.purchasereturns')));
+
+// Platfrom > Purchases > Returns
+Route::screen('purchases/{purchase?}/returns', BillReturn_ListScreen::class)
+    ->name('platform.purchases.returns')
+    ->breadcrumbs(fn (Trail $trail, $purchase) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__('Return'), route('platform.purchases.returns')));
+
+// Platfrom > Purchases > Returns > Create
+Route::screen('purchases/{purchase?}/create-return', BillReturn_EditScreen::class)
+    ->name('platform.purchases.returns.create')
+    ->breadcrumbs(fn (Trail $trail, $purchase) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__('Create Return'), route('platform.purchases.returns.create')));
+
+// Platfrom > Purchases > Return Single > Create
+Route::screen('purchases/{purchase?}/{purchaseDetail?}/create-return', BillReturnSingle_CreateScreen::class)
+    ->name('platform.purchases.returnbypurchasedatails.create')
+    ->breadcrumbs(fn (Trail $trail, $purchase, $purchaseDetail) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__('Create Return'), route('platform.purchases.returnbypurchasedatails.create')));
 
 // Platfrom > Purchases > Deleted
 Route::screen('deleted/purchases', DeletedContact_ListScreen::class)
@@ -61,12 +88,19 @@ Route::screen('deleted/purchases', DeletedContact_ListScreen::class)
         ->parent('platform.purchases')
         ->push(__('Deleted'), route('platform.deleted.purchases')));
 
-// // Platfrom > Purchases > Payments
-// Route::screen('purchases/{purchase?}/payments', Bill_ListScreen::class)
-//     ->name('platform.purchases.payments')
-//     ->breadcrumbs(fn (Trail $trail) => $trail
-//         ->parent('platform.purchases.view')
-//         ->push(__('Payments'), route('platform.purchases.payments')));
+// Platfrom > Purchase Payments
+Route::screen('purchase-payments', PurchasePayments_ListScreen::class)
+    ->name('platform.purchasepayments')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.purchases')
+        ->push(__('Purchase Payment'), route('platform.purchasepayments')));
+
+// Platfrom > Purchases > Payments
+Route::screen('purchases/{purchase?}/payments', BillPayment_ListScreen::class)
+    ->name('platform.purchases.payments')
+    ->breadcrumbs(fn (Trail $trail, $purchase) => $trail
+        ->parent('platform.purchases.view', $purchase)
+        ->push(__('Payments'), route('platform.purchases.payments')));
 
 // Platfrom > Purchases > Payments > Create
 Route::screen('purchases/{purchase?}/create-payment', BillPayment_EditScreen::class)
@@ -89,4 +123,4 @@ Route::screen('purchases/{purchase?}/payments/{payment?}/edit', BillPayment_Edit
 //         ->parent('platform.purchases', $purchase)
 //         ->push(__($payment->reference), route('platform.purchases.payments.view')));
 
-// //
+//

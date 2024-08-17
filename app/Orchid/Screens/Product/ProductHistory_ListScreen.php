@@ -2,13 +2,15 @@
 
 namespace App\Orchid\Screens\Product;
 
-use App\Models\Product;
-use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Components\Cells\DateTimeSplit;
-use Orchid\Screen\Screen;
-use Orchid\Screen\Sight;
+use DateTimeZone;
+use Carbon\Carbon;
 use Orchid\Screen\TD;
+use App\Models\Product;
+use Orchid\Screen\Sight;
+use Orchid\Screen\Screen;
+use Orchid\Screen\Actions\Link;
 use Orchid\Support\Facades\Layout;
+use Orchid\Screen\Components\Cells\DateTimeSplit;
 
 class ProductHistory_ListScreen extends Screen
 {
@@ -23,6 +25,7 @@ class ProductHistory_ListScreen extends Screen
         return [
             'product' => $product,
             'purchase_hist' => $product->purchaseDetails()->defaultSort('created_at', 'desc')->limit(10)->get(),
+            'purchase_return_hist' => $product->purchaseReturnItems()->defaultSort('created_at', 'desc')->limit(10)->get(),
             'stock_adj' => $product->adjustedProducts()->defaultSort('created_at', 'desc')->limit(10)->get(),
         ];
     }
@@ -65,6 +68,8 @@ class ProductHistory_ListScreen extends Screen
      */
     public function layout(): iterable
     {
+        // dd(date_default_timezone_get());
+
         return [
             Layout::columns([
                 Layout::legend('product', [
@@ -87,9 +92,8 @@ class ProductHistory_ListScreen extends Screen
             ]),
 
             Layout::table('stock_adj', [
-                TD::make('date')
-                    ->render(fn($target) => $target->adjustment->date),
-                // ->usingComponent(DateTimeSplit::class),
+                TD::make('date')->width(150)
+                    ->render(fn($target) => $this->dateTimeSplit($target->adjustment->date)),
                 TD::make('stock_adjustment_id', 'Reference')
                     ->render(
                         fn($target) =>
@@ -101,9 +105,8 @@ class ProductHistory_ListScreen extends Screen
             ])->title('Stock Adjustment History'),
 
             Layout::table('purchase_hist', [
-                TD::make('date')
-                    ->render(fn($target) => $target->purchase->date),
-                // ->usingComponent(DateTimeSplit::class),
+                TD::make('date')->width(150)
+                    ->render(fn($target) => $this->dateTimeSplit($target->purchase->date)),
                 TD::make('purchase_id', 'Reference')
                     // ->render(fn($target) => $target->purchase->reference),
                     ->render(
@@ -111,10 +114,30 @@ class ProductHistory_ListScreen extends Screen
                         Link::make($target->purchase->reference)
                             ->route('platform.purchases.view', $target->purchase)
                     ),
-                TD::make('quantity'),
-                TD::make('unit_price', 'Unit Price'),
-                TD::make('sub_total', 'Sub Total'),
+                TD::make('quantity')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100),
+                TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
             ])->title('Purchase History'),
+
+            Layout::table('purchase_return_hist', [
+                TD::make('date')->width(150)
+                    ->render(fn($target) => $this->dateTimeSplit($target->purchaseReturn->created_at)),
+                // TD::make('created_at')
+                //     ->render(fn($target) => $target->created_at), // created_at jadi localtime macam dalam recorded db
+                // TD::make('created_at')
+                //     ->usingComponent(DateTimeSplit::class), // created_at jadi UTC timezone
+                TD::make('purchase_return_id', 'Reference')
+                    // ->render(fn($target) => $target->purchase->reference),
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->purchaseReturn->reference)
+                            ->route('platform.purchases.returns', $target->purchaseReturn)
+                    ),
+                TD::make('quantity')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100)
+                    ->render(fn($target) => $target->purchaseDetail->unit_price),
+                TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
+            ])->title('Purchase Return History'),
             // 
         ];
     }
@@ -134,7 +157,23 @@ class ProductHistory_ListScreen extends Screen
         } else {
             $code = '<span class="badge text-bg-danger text-uppercase">ARCHIVED</span>';
         }
-        
-        return $code;                        ;
+
+        return $code;;
+    }
+
+    public function dateTimeSplit($value)
+    {
+        $upperFormat = 'M j, Y';
+        $lowerFormat = 'D, H:i';
+        $tz = null;
+
+
+        $date = Carbon::parse($value, $tz);
+
+        return sprintf(
+            '<time class="mb-0 text-capitalize">%s<span class="text-muted d-block">%s</span></time>',
+            $date->translatedFormat($upperFormat),
+            $date->translatedFormat($lowerFormat),
+        );
     }
 }

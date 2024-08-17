@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Purchase;
 
 use App\Models\Purchase;
 use App\Models\PurchasePayment;
+use App\Rules\AmountNotExceedDue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
@@ -42,7 +43,10 @@ class BillPayment_EditScreen extends Screen
      */
     public function name(): ?string
     {
-        return $this->payment->exists ? 'Edit ' . $this->payment->reference : 'New Bill Payment';
+        return 'Bill: ' . $this->purchase->reference . ' >> ' .
+            ($this->payment->exists
+                ? 'Edit Payment: ' . $this->payment->reference
+                : 'New Bill Payment');
     }
 
     /**
@@ -65,7 +69,7 @@ class BillPayment_EditScreen extends Screen
 
             Link::make(__('Cancel'))
                 ->icon('bs.x-circle')
-                ->route('platform.purchases.view', $this->purchase),
+                ->route('platform.purchases.payments', $this->purchase),
         ];
     }
 
@@ -147,44 +151,52 @@ class BillPayment_EditScreen extends Screen
         //     $this->removeOldPurchaseDetails($purchase);
         // }
         // 
-        
+
         $request->validate([
             'payment.date' => 'required|date',
             'payment.reference' => 'required|string|max:255',
-            'payment.amount' => 'required|numeric',
+            // 'payment.amount' => ['required', 'numeric', new AmountNotExceedDue($request->input('purchase.due_amount'))],
+            'payment.amount' => [
+                'required',
+                'numeric',
+                new AmountNotExceedDue($request->input('purchase.due_amount'), 'The payment amount should not exceed the due amount.')
+            ],
             'payment.note' => 'nullable|string|max:1000',
             'payment.purchase_id' => 'required',
             'payment.payment_method' => 'required|string|max:255',
         ]);
 
         $payment->fill($request->get('payment'));
-        $payment->fill(['date' => Carbon::parse($request->input('payment.date'))->toDate(),]);
+        $payment->fill([
+            'date' => Carbon::parse($request->input('payment.date'))->toDate(),
+            'updated_by' => auth()->id(),
+        ]);
         $payment->save();
 
 
         // update purchase
         $purchase = Purchase::findOrFail($request->input('payment.purchase_id'));
 
-        $paid_amount = $purchase->paid_amount + $request->input('payment.amount');
+        $paidAmount = $purchase->paid_amount + $request->input('payment.amount');
 
-        $due_amount = $purchase->due_amount - $request->input('payment.amount');
+        $dueAmount = $purchase->due_amount - $request->input('payment.amount');
 
-        $payment_status = match (true) {
-            $due_amount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
-            $due_amount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $due_amount < 0 => PurchasePayment::STATUS_OVERPAID,
+        $paymentStatus = match (true) {
+            $dueAmount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
+            $dueAmount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
+            $dueAmount < 0 => PurchasePayment::STATUS_OVERPAID,
             default => PurchasePayment::STATUS_PAID,
         };
-        
+
         $purchase->update([
-            'paid_amount' => $paid_amount,
-            'due_amount' => $due_amount,
-            'payment_status' => $payment_status,
-            'status' => $payment_status == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
+            'paid_amount' => $paidAmount,
+            'due_amount' => $dueAmount,
+            'payment_status' => $paymentStatus,
+            'status' => $paymentStatus == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
         ]);
 
         Toast::info(__('Purchase Payment was saved.'));
 
-        return redirect()->route('platform.purchases.view', $purchase);
+        return redirect()->route('platform.purchases.payments', $purchase);
     }
 }

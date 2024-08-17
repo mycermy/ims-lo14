@@ -27,15 +27,30 @@ class Purchase extends Model
         'total_amount' => 'decimal:2',
     ];
 
-    public function purchaseDetails() {
+    public function purchaseDetails()
+    {
         return $this->hasMany(PurchaseDetail::class, 'purchase_id', 'id');
     }
 
-    public function purchasePayments() {
+    public function purchasePayments()
+    {
         return $this->hasMany(PurchasePayment::class, 'purchase_id', 'id');
     }
 
-    public static function boot() {
+    public function returns()
+    {
+        return $this->hasMany(PurchaseReturn::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function updatedBy() {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public static function boot()
+    {
         parent::boot();
 
         static::creating(function ($model) {
@@ -45,14 +60,16 @@ class Purchase extends Model
     }
 
     // guna casts pun boleh tapi berguna pada input dalam page edit
-    public function getDateAttribute($value) {
+    public function getDateAttribute($value)
+    {
         return Carbon::parse($value)->format('d M Y');
     }
 
-    public function scopeCompleted($query) {
+    public function scopeCompleted($query)
+    {
         return $query->where('status', self::STATUS_COMPLETED);
     }
-    
+
     // // 
     // public function getRouteKeyName()
     // {

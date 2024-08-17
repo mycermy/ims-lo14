@@ -97,7 +97,9 @@ class Bill_ListScreen extends Screen
                             $button = 'text-bg-danger';
                         }
                         //
-                        return Link::make($target->payment_status)->class($button . ' badge text-uppercase');
+                        return Link::make($target->payment_status)
+                            ->route('platform.purchases.payments', $target)
+                            ->class($button . ' badge text-uppercase');
                     }),
 
                 TD::make('actions')->alignCenter()
@@ -149,7 +151,9 @@ class Bill_ListScreen extends Screen
                         ->confirm(__('You\'re about to approve this purchase.'))
                         // ->canSee($this->can('update'))
                         ->canSee($target->status == Purchase::STATUS_PENDING)
-                        ->method('approve'),
+                        ->method('approve', [
+                            'id' => $target->id,
+                        ]),
 
                     Button::make(__('Delete'))
                         ->icon('bs.trash3')
@@ -163,19 +167,20 @@ class Bill_ListScreen extends Screen
         ]);
     }
 
-    public function approve(Purchase $purchase)
+    public function approve(Request $request)
     {
-        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+        $purchase = Purchase::findOrFail($request->get('id'));
+
+        $purchaseDetails = $purchase->purchaseDetails()->get();
 
         foreach ($purchaseDetails as $purchaseDetail) {
             $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
         }
 
-        Purchase::findOrFail($purchase->id)
-            ->update([
-                'status' => Purchase::STATUS_APPROVED,
-                'updated_by' => auth()->user()->id
-            ]);
+        $purchase->update([
+            'status' => Purchase::STATUS_APPROVED,
+            'updated_by' => auth()->user()->id
+        ]);
 
         // send notification to purchase creator and approver
 

@@ -7,15 +7,17 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\PurchasePayment;
+use App\Orchid\Support\Facades\Layout_mod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Matrix;
+use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
@@ -27,7 +29,6 @@ class Bill_ViewScreen extends Screen
 {
     public ?Purchase $purchase = null;
     public $purchaseDetail;
-    public $purchasePayment;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -38,7 +39,7 @@ class Bill_ViewScreen extends Screen
         return [
             'purchase' => $purchase,
             'purchaseDetail' => $purchase->purchaseDetails()->get(),
-            'purchasePayment' => $purchase->purchasePayments()->get(),
+            'purchase_model' => Purchase::where('id', $purchase->id)->get(),
         ];
     }
 
@@ -49,7 +50,7 @@ class Bill_ViewScreen extends Screen
      */
     public function name(): ?string
     {
-        return $this->purchase->exists ? 'View ' . $this->purchase->reference : 'New Purchase Bill';
+        return 'Bill: ' . $this->purchase->reference;
     }
 
     /**
@@ -67,14 +68,16 @@ class Bill_ViewScreen extends Screen
                 ->canSee($this->purchase->status == Purchase::STATUS_PENDING)
                 ->method('approve'),
 
+            Button::make(__('Revoke Approval'))
+                ->icon('bs.bag-check')
+                ->confirm(__('You\'re about to revoke this purchase approval.'))
+                // ->canSee($this->can('update'))
+                ->canSee($this->purchase->status == Purchase::STATUS_APPROVED && $this->purchase->payment_status == PurchasePayment::STATUS_UNPAID)
+                ->method('approvedRevoke'),
+
             Link::make(__('Back'))
                 ->icon('bs.x-circle')
                 ->route('platform.purchases'),
-
-            Link::make(__('Add Payment'))
-                ->icon('bs.wallet2')
-                ->canSee($this->showPaymentMenu($this->purchase))
-                ->route('platform.purchases.payments.create', $this->purchase),
         ];
     }
 
@@ -90,41 +93,46 @@ class Bill_ViewScreen extends Screen
         $harini = now()->toDateString();
 
         return [
+            new TabMenuPurchase($this->purchase),
+
+            Layout::table('purchase_model', [
+                TD::make('status')->alignCenter()
+                    ->render(
+                        function ($target) {
+                            $class = ($target->status == Purchase::STATUS_APPROVED
+                                || ($target->status == Purchase::STATUS_COMPLETED && $target->payment_status == PurchasePayment::STATUS_PAID))
+                                ? 'text-bg-success text-white'
+                                : 'text-bg-danger';
+                            return Link::make($target->status)
+                                ->class($class . ' badge text-uppercase')
+                                ->route('platform.purchases.view', $target);
+                        }
+                    ),
+                TD::make('date'),
+                TD::make('reference')
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->reference)
+                            ->route('platform.purchases.view', $target)
+                    ),
+                TD::make('supplier_name', 'Supplier'),
+                TD::make('updated_by')->alignRight()->render(fn($target) => $target->updatedBy->name ?? null),
+            ]),
+
             Layout::rows([
-                Group::make([
-                    Input::make('purchase.reference')
-                        ->title('Reference')
-                        // ->required()
-                        // ->value($refid)
-                        ->disabled(),
-                    //
-                    DateTimer::make('purchase.date')
-                        ->title('Date')
-                        ->format('d M Y')
-                        // ->required()
-                        // ->value($harini)
-                        ->disabled(),
-                    // 
-                    Relation::make('purchase.supplier_id')
-                        ->title('Supplier')
-                        ->fromModel(Contact::class, 'name')
-                        // ->applyScope('supplier')
-                        // ->searchColumns('name', 'phone', 'email')
-                        // ->chunk(10)
-                        ->disabled(),
-                    // 
-                ])->fullWidth(),
-                //
-                TextArea::make('purchase.note')
-                    ->title('Note (If Needed)')
-                    ->rows(3)
-                    ->disabled()
+                Label::make('purchase.note')
+                    ->title('Note: ')
                     ->horizontal(),
+                // TextArea::make('purchase.note')
+                //     ->title('Note')
+                //     ->rows(3)
+                //     ->disabled()
+                //     ->horizontal(),
                 // 
             ]),
 
             Layout::table('purchaseDetail', [
-                TD::make('id', '#')->width(10)->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('product_id', 'Code')
                     // ->render(fn ($target) => $target->product->code ?? null),
                     ->render(
@@ -137,31 +145,25 @@ class Bill_ViewScreen extends Screen
                             }
                         }
                     ),
-                TD::make('product_id', 'Product')->render(fn ($target) => $target->product->name ?? null),
-                TD::make('quantity', 'Qty')->alignCenter(),
-                TD::make('unit_price', 'Unit Price')->alignRight(),
-                TD::make('sub_total', 'Total')->alignRight(),
-                ]),//->title('Purchase Details'),
-
-            Layout::table('purchasePayment', [
-                TD::make('id', '#')->width(10)->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('date'),
-                TD::make('reference'),
-                TD::make('payment_method'),
-                TD::make('amount')->alignRight(),
-                TD::make('note'),
-
+                TD::make('product_id', 'Product')->render(fn($target) => $target->product->name ?? null),
+                TD::make('quantity', 'Qty')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100),
+                TD::make('sub_total', 'Total')->alignRight()->width(100),
+                TD::make('quantity_return', 'QtyReturn')->alignCenter()->width(50),
+                // 
                 TD::make('actions')->alignCenter()
                     ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
-                    ->width('120px')
+                    ->width('10px')
                     ->render(
-                        fn ($target) =>
+                        fn($target) =>
                         $this->getTableActions($target)
                             ->alignCenter()
-                            // ->autoWidth()
+                            ->autoWidth()
                             ->render()
                     ),
-            ])->title('Purchase Payments'),
+                // 
+            ]), //->title('Purchase Details'),
+
         ];
     }
 
@@ -173,17 +175,16 @@ class Bill_ViewScreen extends Screen
     private function getTableActions($target): Group
     {
         return Group::make([
-            Link::make(__(''))
-                ->icon('pencil')
-                ->route('platform.purchases.payments.edit', [$this->purchase, $target]),
-
-            Button::make(__(''))
-                ->icon('bs.trash3')
-                ->confirm(__('Once the product is deleted, all of its resources and data will be permanently deleted. 
-                    Before deleting your product, please download any data or information that you wish to retain.'))
-                // ->canSee(!$target->trashed())
-                ->method('removePayment', [
-                    'id' => $target->id,
+            DropDown::make()
+                ->icon('three-dots-vertical')
+                ->list([
+                    Link::make(__('Add Return'))
+                        ->icon('bs.plus-circle')
+                        // ->canSee($this->can('view'))
+                        ->canSee(($target->quantity > $target->quantity_return)
+                                && ($this->purchase->status == Purchase::STATUS_APPROVED || $this->purchase->status == Purchase::STATUS_COMPLETED)
+                        )
+                        ->route('platform.purchases.returnbypurchasedatails.create', [$this->purchase, $target]),
                 ]),
         ]);
     }
@@ -207,7 +208,31 @@ class Bill_ViewScreen extends Screen
         // 
         Toast::info(__('Purchase has been approved.'));
 
-        return redirect()->route('platform.purchases');
+        return redirect()->route('platform.purchases.view', $this->purchase);
+    }
+
+    // hanya terpakai pada Purchase::STATUS_APPROVED dan Purchase::STATUS_UNPAID
+    public function approvedRevoke(Purchase $purchase)
+    {
+        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+        foreach ($purchaseDetails as $purchaseDetail) {
+            // Product::where('id', $product->product_id)
+            //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
+            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'sub');
+        }
+
+        Purchase::findOrFail($purchase->id)
+            ->update([
+                'status' => Purchase::STATUS_PENDING,
+                'updated_by' => auth()->id(),
+            ]);
+        // send notification to purchase creator and approver
+
+        // 
+        Toast::warning(__('Purchase approval has been revoked!'));
+
+        return redirect()->route('platform.purchases.view', $this->purchase);
     }
 
     public function updateStock($productID, $purchaseQty, $type)
@@ -225,46 +250,5 @@ class Bill_ViewScreen extends Screen
         $product->update([
             'quantity' => $updateQty
         ]);
-    }
-
-    /**
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function removePayment(Request $request)
-    {
-        // rollback paid amount in purchase table
-        $purchasePayment = PurchasePayment::findOrFail($request->get('id'));
-        $purchase = $purchasePayment->purchase;
-
-        $paid_amount = $purchase->paid_amount - $purchasePayment->amount;
-
-        $due_amount = $purchase->due_amount + $purchasePayment->amount;
-
-        $payment_status = match (true) {
-            $due_amount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
-            $due_amount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $due_amount < 0 => PurchasePayment::STATUS_OVERPAID,
-            default => PurchasePayment::STATUS_PAID,
-        };
-
-        $purchase->update([
-            'paid_amount' => $paid_amount,
-            'due_amount' => $due_amount,
-            'payment_status' => $payment_status,
-            'status' => $payment_status != PurchasePayment::STATUS_PAID ? Purchase::STATUS_APPROVED : $purchase->status,
-        ]);
-
-        // parent
-        $purchasePayment->delete();
-
-        Toast::info(__('Purchase Payment was deleted.'));
-    }
-
-    public function showPaymentMenu($target)
-    {
-        if ($target->status == Purchase::STATUS_APPROVED && $target->payment_status != PurchasePayment::STATUS_PAID) {
-            return true;
-        }
-        return false;
     }
 }

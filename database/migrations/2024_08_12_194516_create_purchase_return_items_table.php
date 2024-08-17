@@ -1,7 +1,8 @@
 <?php
 
 use App\Models\Product;
-use App\Models\Purchase;
+use App\Models\PurchaseDetail;
+use App\Models\PurchaseReturn;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,10 +14,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_details', function (Blueprint $table) {
+        Schema::create('purchase_return_items', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignIdFor(Purchase::class)
+            $table->foreignIdFor(PurchaseReturn::class)
+                  ->constrained()
+                  ->cascadeOnUpdate()
+                  ->cascadeOnDelete();
+
+            $table->foreignIdFor(PurchaseDetail::class)
                   ->constrained()
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
@@ -25,19 +31,10 @@ return new class extends Migration
                   ->constrained()
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
-            // $table->string('product_name');
-            // $table->string('product_code');
-            $table->integer('quantity');
-            $table->integer('quantity_return')->default(0);
-            // $table->integer('price');
-            $table->decimal('unit_price');
-            $table->decimal('sub_total', 20);
-            $table->decimal('product_discount_amount', 20)->default(0.00);
-            $table->string('product_discount_type')->default('fixed');
-            $table->decimal('product_tax_amount', 20)->default(0.00);
-            $table->timestamps();
 
-            // 
+            $table->integer('quantity');
+            $table->decimal('sub_total', 20, 2);
+            $table->timestamps();
         });
     }
 
@@ -46,6 +43,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_details');
+        Schema::dropIfExists('purchase_return_items');
     }
 };

@@ -105,6 +105,13 @@ class Product extends Model
     /**
      * @return HasMany
      */
+    public function purchaseReturnItems(){
+        return $this->hasMany(PurchaseReturnItem::class);
+    }
+
+    /**
+     * @return HasMany
+     */
     public function adjustedProducts(){
         return $this->hasMany(AdjustedProduct::class);
     }

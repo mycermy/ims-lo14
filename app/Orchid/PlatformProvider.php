@@ -55,7 +55,8 @@ class PlatformProvider extends OrchidServiceProvider
                 ->icon('bs.card-list')
                 ->list([
                     Menu::make('Bills')->route('platform.purchases'),
-                    Menu::make('Purchase Returns')->route('platform.purchases.return'),
+                    Menu::make('Purchase Payments')->route('platform.purchasepayments'),
+                    Menu::make('Purchase Returns')->route('platform.purchasereturns'),
                 ])
                 ->permission('platform.purchases.index')
                 ->title('Purchases Management Module')

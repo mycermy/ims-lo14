@@ -184,7 +184,7 @@ class Bill_EditScreen extends Screen
 
         Toast::info(__('Purchase bill was saved.'));
 
-        return redirect()->route('platform.purchases');
+        return redirect()->route('platform.purchases.view', $purchase);
     }
 
     /**
@@ -206,26 +206,48 @@ class Bill_EditScreen extends Screen
         }
     }
 
-    public function approve(Purchase $purchase)
-    {
-        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+    // public function approve(Purchase $purchase)
+    // {
+    //     $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
 
-        foreach ($purchaseDetails as $purchaseDetail) {
-            // Product::where('id', $product->product_id)
-            //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
-        }
+    //     foreach ($purchaseDetails as $purchaseDetail) {
+    //         // Product::where('id', $product->product_id)
+    //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
+    //         $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+    //     }
 
-        Purchase::findOrFail($purchase->id)
-            ->update([
-                'status' => Purchase::STATUS_APPROVED,
-                'updated_by' => auth()->user()->id
-            ]);
+    //     Purchase::findOrFail($purchase->id)
+    //         ->update([
+    //             'status' => Purchase::STATUS_APPROVED,
+    //             'updated_by' => auth()->id(),
+    //         ]);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Purchase has been approved!');
-    }
+    //     return redirect()
+    //         ->back()
+    //         ->with('success', 'Purchase has been approved!');
+    // }
+
+    // // hanya terpakai pada Purchase::STATUS_APPROVED dan Purchase::STATUS_UNPAID
+    // public function approvedRevoke(Purchase $purchase)
+    // {
+    //     $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+    //     foreach ($purchaseDetails as $purchaseDetail) {
+    //         // Product::where('id', $product->product_id)
+    //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
+    //         $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'sub');
+    //     }
+
+    //     Purchase::findOrFail($purchase->id)
+    //         ->update([
+    //             'status' => Purchase::STATUS_PENDING,
+    //             'updated_by' => auth()->id(),
+    //         ]);
+
+    //     return redirect()
+    //         ->back()
+    //         ->with('success', 'Purchase approval has been revoked!');
+    // }
 
     public function updateStock($productID, $purchaseQty, $type)
     {
