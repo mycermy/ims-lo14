@@ -13,25 +13,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_payments', function (Blueprint $table) {
+        Schema::create('purchase_returns', function (Blueprint $table) {
             $table->id();
-            $table->decimal('amount', 20);
-            $table->date('date');
-            $table->string('reference');
-            $table->string('payment_method');
-            $table->text('note')->nullable();
-            $table->timestamps();
 
             $table->foreignIdFor(Purchase::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
+            $table->string('reference');
+            $table->decimal('total_amount', 10, 2);
+            $table->text('reason')->nullable();
+            $table->timestamps();
+
             $table->foreignIdFor(User::class, 'updated_by')->default(1)
                 ->constrained('users')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            // 
         });
     }
 
@@ -40,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_payments');
+        Schema::dropIfExists('purchase_returns');
     }
 };

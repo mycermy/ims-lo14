@@ -36,6 +36,13 @@ class PurchasePayment extends Model
         return $this->belongsTo(Purchase::class, 'purchase_id', 'id');
     }
 
+    /**
+     * @return BelongsTo
+     */
+    public function updatedBy() {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     // public function setAmountAttribute($value) {
     //     $this->attributes['amount'] = $value * 100;
     // }

@@ -7,14 +7,17 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\PurchasePayment;
+use App\Orchid\Support\Facades\Layout_mod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
@@ -36,6 +39,7 @@ class Bill_ViewScreen extends Screen
         return [
             'purchase' => $purchase,
             'purchaseDetail' => $purchase->purchaseDetails()->get(),
+            'purchase_model' => Purchase::where('id', $purchase->id)->get(),
         ];
     }
 
@@ -64,6 +68,13 @@ class Bill_ViewScreen extends Screen
                 ->canSee($this->purchase->status == Purchase::STATUS_PENDING)
                 ->method('approve'),
 
+            Button::make(__('Revoke Approval'))
+                ->icon('bs.bag-check')
+                ->confirm(__('You\'re about to revoke this purchase approval.'))
+                // ->canSee($this->can('update'))
+                ->canSee($this->purchase->status == Purchase::STATUS_APPROVED && $this->purchase->payment_status == PurchasePayment::STATUS_UNPAID)
+                ->method('approvedRevoke'),
+
             Link::make(__('Back'))
                 ->icon('bs.x-circle')
                 ->route('platform.purchases'),
@@ -82,49 +93,46 @@ class Bill_ViewScreen extends Screen
         $harini = now()->toDateString();
 
         return [
-            Layout::tabmenu([
-                Menu::make('Purchase Details')
-                    ->route('platform.purchases.view', $this->purchase),
-    
-                Menu::make('Payments')
-                    ->route('platform.purchases.payments', $this->purchase),
+            new TabMenuPurchase($this->purchase),
+
+            Layout::table('purchase_model', [
+                TD::make('status')->alignCenter()
+                    ->render(
+                        function ($target) {
+                            $class = ($target->status == Purchase::STATUS_APPROVED
+                                || ($target->status == Purchase::STATUS_COMPLETED && $target->payment_status == PurchasePayment::STATUS_PAID))
+                                ? 'text-bg-success text-white'
+                                : 'text-bg-danger';
+                            return Link::make($target->status)
+                                ->class($class . ' badge text-uppercase')
+                                ->route('platform.purchases.view', $target);
+                        }
+                    ),
+                TD::make('date'),
+                TD::make('reference')
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->reference)
+                            ->route('platform.purchases.view', $target)
+                    ),
+                TD::make('supplier_name', 'Supplier'),
+                TD::make('updated_by')->alignRight()->render(fn($target) => $target->updatedBy->name ?? null),
             ]),
 
             Layout::rows([
-                Group::make([
-                    Input::make('purchase.reference')
-                        ->title('Reference')
-                        // ->required()
-                        // ->value($refid)
-                        ->disabled(),
-                    //
-                    DateTimer::make('purchase.date')
-                        ->title('Date')
-                        ->format('d M Y')
-                        // ->required()
-                        // ->value($harini)
-                        ->disabled(),
-                    // 
-                    Relation::make('purchase.supplier_id')
-                        ->title('Supplier')
-                        ->fromModel(Contact::class, 'name')
-                        // ->applyScope('supplier')
-                        // ->searchColumns('name', 'phone', 'email')
-                        // ->chunk(10)
-                        ->disabled(),
-                    // 
-                ])->fullWidth(),
-                //
-                TextArea::make('purchase.note')
-                    ->title('Note (If Needed)')
-                    ->rows(3)
-                    ->disabled()
+                Label::make('purchase.note')
+                    ->title('Note: ')
                     ->horizontal(),
+                // TextArea::make('purchase.note')
+                //     ->title('Note')
+                //     ->rows(3)
+                //     ->disabled()
+                //     ->horizontal(),
                 // 
             ]),
 
             Layout::table('purchaseDetail', [
-                TD::make('id', '#')->width(10)->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('product_id', 'Code')
                     // ->render(fn ($target) => $target->product->code ?? null),
                     ->render(
@@ -137,13 +145,48 @@ class Bill_ViewScreen extends Screen
                             }
                         }
                     ),
-                TD::make('product_id', 'Product')->render(fn ($target) => $target->product->name ?? null),
-                TD::make('quantity', 'Qty')->alignCenter(),
-                TD::make('unit_price', 'Unit Price')->alignRight(),
-                TD::make('sub_total', 'Total')->alignRight(),
-                ]),//->title('Purchase Details'),
+                TD::make('product_id', 'Product')->render(fn($target) => $target->product->name ?? null),
+                TD::make('quantity', 'Qty')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100),
+                TD::make('sub_total', 'Total')->alignRight()->width(100),
+                TD::make('quantity_return', 'QtyReturn')->alignCenter()->width(50),
+                // 
+                TD::make('actions')->alignCenter()
+                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
+                // 
+            ]), //->title('Purchase Details'),
 
         ];
+    }
+
+    /**
+     * @param Model $model
+     *
+     * @return Group
+     */
+    private function getTableActions($target): Group
+    {
+        return Group::make([
+            DropDown::make()
+                ->icon('three-dots-vertical')
+                ->list([
+                    Link::make(__('Add Return'))
+                        ->icon('bs.plus-circle')
+                        // ->canSee($this->can('view'))
+                        ->canSee(($target->quantity > $target->quantity_return)
+                                && ($this->purchase->status == Purchase::STATUS_APPROVED || $this->purchase->status == Purchase::STATUS_COMPLETED)
+                        )
+                        ->route('platform.purchases.returnbypurchasedatails.create', [$this->purchase, $target]),
+                ]),
+        ]);
     }
 
     public function approve(Purchase $purchase)
@@ -164,6 +207,30 @@ class Bill_ViewScreen extends Screen
 
         // 
         Toast::info(__('Purchase has been approved.'));
+
+        return redirect()->route('platform.purchases.view', $this->purchase);
+    }
+
+    // hanya terpakai pada Purchase::STATUS_APPROVED dan Purchase::STATUS_UNPAID
+    public function approvedRevoke(Purchase $purchase)
+    {
+        $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+
+        foreach ($purchaseDetails as $purchaseDetail) {
+            // Product::where('id', $product->product_id)
+            //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
+            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'sub');
+        }
+
+        Purchase::findOrFail($purchase->id)
+            ->update([
+                'status' => Purchase::STATUS_PENDING,
+                'updated_by' => auth()->id(),
+            ]);
+        // send notification to purchase creator and approver
+
+        // 
+        Toast::warning(__('Purchase approval has been revoked!'));
 
         return redirect()->route('platform.purchases.view', $this->purchase);
     }

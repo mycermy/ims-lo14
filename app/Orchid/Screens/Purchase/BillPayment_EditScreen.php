@@ -167,29 +167,32 @@ class BillPayment_EditScreen extends Screen
         ]);
 
         $payment->fill($request->get('payment'));
-        $payment->fill(['date' => Carbon::parse($request->input('payment.date'))->toDate(),]);
+        $payment->fill([
+            'date' => Carbon::parse($request->input('payment.date'))->toDate(),
+            'updated_by' => auth()->id(),
+        ]);
         $payment->save();
 
 
         // update purchase
         $purchase = Purchase::findOrFail($request->input('payment.purchase_id'));
 
-        $paid_amount = $purchase->paid_amount + $request->input('payment.amount');
+        $paidAmount = $purchase->paid_amount + $request->input('payment.amount');
 
-        $due_amount = $purchase->due_amount - $request->input('payment.amount');
+        $dueAmount = $purchase->due_amount - $request->input('payment.amount');
 
-        $payment_status = match (true) {
-            $due_amount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
-            $due_amount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $due_amount < 0 => PurchasePayment::STATUS_OVERPAID,
+        $paymentStatus = match (true) {
+            $dueAmount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
+            $dueAmount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
+            $dueAmount < 0 => PurchasePayment::STATUS_OVERPAID,
             default => PurchasePayment::STATUS_PAID,
         };
 
         $purchase->update([
-            'paid_amount' => $paid_amount,
-            'due_amount' => $due_amount,
-            'payment_status' => $payment_status,
-            'status' => $payment_status == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
+            'paid_amount' => $paidAmount,
+            'due_amount' => $dueAmount,
+            'payment_status' => $paymentStatus,
+            'status' => $paymentStatus == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
         ]);
 
         Toast::info(__('Purchase Payment was saved.'));

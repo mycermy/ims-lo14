@@ -4,6 +4,8 @@ namespace App\Orchid\Screens\Purchase;
 
 use App\Models\Purchase;
 use App\Models\PurchasePayment;
+use App\Models\PurchaseReturn;
+use App\Models\PurchaseReturnItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
@@ -16,10 +18,10 @@ use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
-class BillPayment_ListScreen extends Screen
+class BillReturn_ListScreen extends Screen
 {
     public ?Purchase $purchase = null;
-    public $purchasePayment;
+    public $returns;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -27,10 +29,15 @@ class BillPayment_ListScreen extends Screen
      */
     public function query(Purchase $purchase): iterable
     {
+        // $returns = PurchaseReturn::where('purchase_id', $purchase->id)->get();
+        // $returnItems = PurchaseReturnItem::whereIn('purchase_return_id', $returns->pluck('id'))->get();
+        $returns = $purchase->returns;
+        $returnItems = $returns ? PurchaseReturnItem::whereIn('purchase_return_id', $returns->pluck('id'))->get() : collect();
+
         return [
             'purchase' => $purchase,
-            'purchasePayment' => $purchase->purchasePayments()->get(),
-            'purchase_model' => Purchase::where('id', $purchase->id)->get(),
+            'returns' => $returns,
+            'returnItems' => $returnItems,
         ];
     }
 
@@ -70,10 +77,10 @@ class BillPayment_ListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Link::make(__('Add Payment'))
-                ->icon('bs.wallet2')
-                ->canSee($this->showPaymentMenu($this->purchase))
-                ->route('platform.purchases.payments.create', $this->purchase),
+            // Link::make(__('Add Return'))
+            //     ->icon('bs.wallet2')
+            //     ->canSee($this->showReturnMenu($this->purchase))
+            //     ->route('platform.purchases.returns.create', $this->purchase),
             // 
             Link::make(__('Back'))
                 ->icon('bs.x-circle')
@@ -89,52 +96,40 @@ class BillPayment_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            // Layout::tabmenu([
-            //     Menu::make('Purchase Details')
-            //         ->route('platform.purchases.view', $this->purchase),
-
-            //     Menu::make('Payments')
-            //         ->route('platform.purchases.payments', $this->purchase),
-            // ]),
-
             new TabMenuPurchase($this->purchase),
 
-            Layout::table('purchase_model', [
-                TD::make('total_amount')->alignRight(),
-                TD::make('total_amount_return')->alignRight(),
-                TD::make('paid_amount')->alignRight(),
-                TD::make('due_amount')->alignRight(),
-                TD::make('payment_status')->alignCenter()
-                    ->render(function ($target) {
-                        if ($target->payment_status == PurchasePayment::STATUS_PAID) {
-                            $button = 'text-bg-success text-white';
-                        } else {
-                            $button = 'text-bg-danger';
-                        }
-                        //
-                        return Link::make($target->payment_status)->class($button . ' badge text-uppercase');
-                    }),
-            ]),
-
-            Layout::table('purchasePayment', [
+            Layout::table('returnItems', [
                 TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('date')->width(150),
-                TD::make('reference')->width(150),
-                TD::make('note'),
-                TD::make('payment_method', 'Payment Method')->alignCenter()->width(100),
-                TD::make('amount')->alignRight()->width(100),
-                TD::make('updated_by', 'Updated By')->width(150)->render(fn($target) => $target->updatedBy->name ?? null),
-
-                TD::make('actions')->alignCenter()
-                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
-                    ->width('120px')
+                TD::make('reference')->width(150)
                     ->render(
-                        fn($target) =>
-                        $this->getTableActions($target)
-                            ->alignCenter()
-                            // ->autoWidth()
-                            ->render()
+                        fn($target) => $target->purchaseReturn->reference
                     ),
+                TD::make('product_id', 'Code')
+                    // ->render(fn ($target) => $target->product->code ?? null),
+                    ->render(
+                        function ($target) {
+                            if ($target->product->code) {
+                                return Link::make($target->product->code)
+                                    ->route('platform.product.hist', $target->product->id);
+                            } else {
+                                return null;
+                            }
+                        }
+                    ),
+                TD::make('product_id', 'Product')->render(fn($target) => $target->product->name ?? null),
+                TD::make('quantity')->alignCenter()->width(50),
+                TD::make('sub_total')->alignRight()->width(150),
+
+                // TD::make('actions')->alignCenter()
+                //     ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                //     ->width('120px')
+                //     ->render(
+                //         fn ($target) =>
+                //         $this->getTableActions($target)
+                //             ->alignCenter()
+                //             // ->autoWidth()
+                //             ->render()
+                //     ),
             ]), //->title('Purchase Payments'),
         ];
     }
@@ -150,7 +145,7 @@ class BillPayment_ListScreen extends Screen
             Link::make(__(''))
                 ->icon('pencil')
                 // ->type(Color::PRIMARY)
-                ->route('platform.purchases.payments.edit', [$this->purchase, $target]),
+                ->route('platform.purchases.returns.edit', [$this->purchase, $target]),
 
             Button::make(__(''))
                 ->icon('bs.trash3')
@@ -197,14 +192,11 @@ class BillPayment_ListScreen extends Screen
         Toast::info(__('Purchase Payment was deleted.'));
     }
 
-    public function showPaymentMenu($target)
+    public function showReturnMenu($target)
     {
-        if (
-            $target->status == Purchase::STATUS_APPROVED &&
-            !in_array($target->payment_status, [PurchasePayment::STATUS_PAID, PurchasePayment::STATUS_OVERPAID])
-        ) {
-            return true;
-        }
-        return false;
+        $isApprovedOrCompleted = in_array($target->status, [Purchase::STATUS_APPROVED, Purchase::STATUS_COMPLETED]);
+        $isAmountReturnLess = $this->purchase->total_amount_return < $this->purchase->total_amount;
+
+        return $isApprovedOrCompleted && $isAmountReturnLess;
     }
 }

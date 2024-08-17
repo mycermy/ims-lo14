@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('discount_amount', 20)->default(0.00);
             $table->decimal('shipping_amount', 20)->default(0.00);
             $table->decimal('total_amount', 20)->default(0.00);
+            $table->decimal('total_amount_return', 20)->default(0.00);
             $table->decimal('paid_amount', 20)->default(0.00);
             $table->decimal('due_amount', 20)->default(0.00);
             $table->string('status')->default('draf');
