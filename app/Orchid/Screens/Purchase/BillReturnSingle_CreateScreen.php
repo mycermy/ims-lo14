@@ -187,7 +187,7 @@ class BillReturnSingle_CreateScreen extends Screen
 
         // update PurchaseDetail Quantity Return
         $purchaseItem = PurchaseDetail::findOrFail($returnItem['purchase_detail_id']);
-        $purchaseItem->update(['quantity_return' => $purchaseItem->quantiti_return + $returnItem['quantity']]);
+        $purchaseItem->update(['quantity_return' => $purchaseItem->quantity_return + $returnItem['quantity']]);
 
         // Update stock quantity in the product
         $this->updateStock($returnItem['product_id'], $returnItem['quantity'], 'sub');
@@ -206,24 +206,51 @@ class BillReturnSingle_CreateScreen extends Screen
         $purchase = Purchase::findOrFail($request->input('return.purchase_id'));
 
         $totalAmountReturn = $purchase->total_amount_return + $subTotal;
-        $dueAmount = $purchase->total_amount - $totalAmountReturn - $purchase->paid_amount;
+        $newTotalAmount = $purchase->total_amount - $totalAmountReturn;
+        $dueAmount = $newTotalAmount - $purchase->paid_amount;
+
+        // Adjust paid amount if necessary
+        $newPaidAmount = $purchase->paid_amount;
+        $refundAmount = 0;
+        if ($dueAmount < 0) {
+            $newPaidAmount += $dueAmount; // Refund the excess amount
+            $refundAmount = $dueAmount; // Refund the excess amount
+            $dueAmount = 0;
+        }
 
         $paymentStatus = match (true) {
-            $dueAmount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
+            $dueAmount == 0 && $newTotalAmount == 0 => PurchasePayment::PAYMENT_REFUND,
+            $dueAmount == 0 && $newPaidAmount == $newTotalAmount => PurchasePayment::STATUS_PAID,
+            $dueAmount == $newTotalAmount => PurchasePayment::STATUS_UNPAID,
             $dueAmount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $dueAmount < 0 => PurchasePayment::STATUS_OVERPAID,
-            default => PurchasePayment::STATUS_PAID,
+            default => PurchasePayment::STATUS_OVERPAID,
         };
 
         $purchase->update([
             // 'total_amount' => $purchase->total_amount, // tak perlu update
             'total_amount_return' => $totalAmountReturn,
-            // 'paid_amount' => $purchase->paid_amount, // tak perlu update
+            'paid_amount' => $newPaidAmount,
             'due_amount' => $dueAmount,
             'payment_status' => $paymentStatus,
+            'status' => $paymentStatus == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
         ]);
 
-        // return response()->json(['message' => 'Purchase return processed successfully.']);
+        // Record the payment adjustment in PurchasePayment
+        if ($refundAmount < 0) {
+            $number = PurchasePayment::max('id') + 1;
+            $refid = make_reference_id('PVRTN', $number);
+            $harini = now()->toDateString();
+            PurchasePayment::create([
+                'purchase_id' => $purchase->id,
+                'reference' => $refid,
+                'date' => $harini,
+                'amount' => $refundAmount, // Store the refund amount as a negative value
+                'payment_method' => PurchasePayment::PAYMENT_REFUND,
+                'note' => 'Refund from Purchase Return #' . $purchaseReturn->reference,
+                'created_by' => auth()->id(),
+            ]);
+        }
+
         Toast::info(__('Purchase return processed successfully.'));
 
         return redirect()->route('platform.purchases.returns', $this->purchase);

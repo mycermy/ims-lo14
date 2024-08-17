@@ -108,6 +108,8 @@ class BillPayment_ListScreen extends Screen
                     ->render(function ($target) {
                         if ($target->payment_status == PurchasePayment::STATUS_PAID) {
                             $button = 'text-bg-success text-white';
+                        } elseif ($target->payment_status == PurchasePayment::PAYMENT_REFUND) {
+                            $button = 'text-bg-warning';
                         } else {
                             $button = 'text-bg-danger';
                         }
@@ -121,7 +123,7 @@ class BillPayment_ListScreen extends Screen
                 TD::make('date')->width(150),
                 TD::make('reference')->width(150),
                 TD::make('note'),
-                TD::make('payment_method', 'Payment Method')->alignCenter()->width(100),
+                TD::make('payment_method', 'Payment Method')->alignCenter()->width(150),
                 TD::make('amount')->alignRight()->width(100),
                 TD::make('updated_by', 'Updated By')->width(150)->render(fn($target) => $target->updatedBy->name ?? null),
 

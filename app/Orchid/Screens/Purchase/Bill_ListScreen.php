@@ -93,6 +93,8 @@ class Bill_ListScreen extends Screen
                             $button = 'text-bg-success text-white';
                             // } else if ($target->created_at <= now() && $target->due_at >= now()) {
                             //     $button = 'btn btn-warning';
+                        } elseif ($target->payment_status == PurchasePayment::PAYMENT_REFUND) {
+                            $button = 'text-bg-warning';
                         } else {
                             $button = 'text-bg-danger';
                         }

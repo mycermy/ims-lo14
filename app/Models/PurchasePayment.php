@@ -24,6 +24,7 @@ class PurchasePayment extends Model
     public const PAYMENT_CREDIT_CARD = 'credit card';
     public const PAYMENT_CHEQUE = 'cheque';
     public const PAYMENT_OTHER = 'other';
+    public const PAYMENT_REFUND = 'refund';
 
     protected $guarded = ['id'];
 
@@ -51,14 +52,14 @@ class PurchasePayment extends Model
     //     return $value / 100;
     // }
 
-    public static function boot() {
-        parent::boot();
+    // public static function boot() {
+    //     parent::boot();
 
-        static::creating(function ($model) {
-            $number = PurchasePayment::max('id') + 1;
-            $model->reference = make_reference_id('PV', $number);
-        });
-    }
+    //     static::creating(function ($model) {
+    //         $number = PurchasePayment::max('id') + 1;
+    //         $model->reference = make_reference_id('PV', $number);
+    //     });
+    // }
 
     public function getDateAttribute($value) {
         return Carbon::parse($value)->format('d M Y');

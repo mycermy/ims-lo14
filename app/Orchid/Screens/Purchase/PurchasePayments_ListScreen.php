@@ -77,7 +77,7 @@ class PurchasePayments_ListScreen extends Screen
         return [
             Layout::table('model', [
                 TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('date')->width(150),
+                TD::make('date')->width(130),
                 TD::make('bill')->width(150)
                     ->render(
                         fn($target) =>
@@ -90,7 +90,7 @@ class PurchasePayments_ListScreen extends Screen
                         Link::make($target->reference)
                             ->route('platform.purchases.payments', $target->purchase)
                     ),
-                TD::make('payment_method', 'Payment Method')->alignCenter()->width(100),
+                TD::make('payment_method', 'Payment Method')->alignCenter()->width(150),
                 TD::make('amount')->alignRight()->width(50),
                 TD::make('note'),
                 TD::make('updated_by')->alignRight()->width(150)
