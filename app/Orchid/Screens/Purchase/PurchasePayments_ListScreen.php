@@ -76,7 +76,7 @@ class PurchasePayments_ListScreen extends Screen
     {
         return [
             Layout::table('model', [
-                TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('date')->width(130),
                 TD::make('bill')->width(150)
                     ->render(

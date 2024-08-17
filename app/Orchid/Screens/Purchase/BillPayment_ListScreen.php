@@ -119,7 +119,7 @@ class BillPayment_ListScreen extends Screen
             ]),
 
             Layout::table('purchasePayment', [
-                TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('date')->width(150),
                 TD::make('reference')->width(150),
                 TD::make('note'),

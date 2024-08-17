@@ -131,7 +131,7 @@ class ProductHistory_ListScreen extends Screen
                     ->render(
                         fn($target) =>
                         Link::make($target->purchaseReturn->reference)
-                            ->route('platform.purchases.returns', $target->purchaseReturn)
+                            ->route('platform.purchases.returns', $target->purchaseReturn->purchase)
                     ),
                 TD::make('quantity')->alignCenter()->width(50),
                 TD::make('unit_price', 'Unit Price')->alignRight()->width(100)
