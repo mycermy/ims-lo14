@@ -238,7 +238,7 @@ class BillReturnSingle_CreateScreen extends Screen
         // Record the payment adjustment in PurchasePayment
         if ($refundAmount < 0) {
             $number = PurchasePayment::max('id') + 1;
-            $refid = make_reference_id('PVRTN', $number);
+            $refid = make_reference_id('PVRT', $number);
             $harini = now()->toDateString();
             PurchasePayment::create([
                 'purchase_id' => $purchase->id,

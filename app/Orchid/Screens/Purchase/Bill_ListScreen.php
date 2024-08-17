@@ -27,7 +27,7 @@ class Bill_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Purchase::filters()->paginate(),
+            'model' => Purchase::filters()->orderByDesc('date')->orderByDesc('id')->paginate(),
         ];
     }
 
