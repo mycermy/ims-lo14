@@ -1,0 +1,217 @@
+inventory management system with laravel orchid 14
+
+composer create-project laravel/laravel ims-lo14 "10.*" --prefer-dist
+
+composer require orchid/platform
+
+php artisan orchid:install
+
+php artisan orchid:admin amsitsupport amsitsupport@amsworkshopsystem.com amsadmin@8171
+
+composer update orchid/platform --with-dependencies
+
+composer show spatie/laravel-query-builder
+composer require spatie/laravel-query-builder "^4.0"
+php artisan vendor:publish --provider="Spatie\QueryBuilder\QueryBuilderServiceProvider" --tag="config"
+
+composer show illuminate/database
+composer update illuminate/database
+
+#git checkout -b feature/issue_001
+#git commit -am 'ref #001 [Docs] Fix typo'
+#git push origin feature/issue_001
+
+git checkout -b feature/product
+git commit -am 'ref #001 [Docs] Fix typo'
+git push origin feature/product
+
+
+php artisan make:migration "create_categories_table"  --table=categories
+
+php artisan migrate
+
+php artisan migrate:rollback
+
+php artisan make:model Category  -f
+
+php artisan make:model Product     -a
+
+# nak kena check balik. apa dia non-stock vs non-inventory
+
+git checkout -b feature/contact
+git push origin feature/contact
+
+php artisan orchid:screen Contact/Contact_ListScreen
+php artisan orchid:screen Contact/Address_ListScreen
+
+git fetch origin
+git checkout feature/3-product-adjustment
+
+php artisan make:model StockAdjustment -m -f
+php artisan make:model AdjustedProduct -m -f
+
+php artisan orchid:screen Product/StockAdjustment_ListScreen
+php artisan orchid:screen Product/StockAdjustment_EditScreen
+
+#bila update helpers file, nak add new function ka
+
+dalam json
+
+"autoload": {
+    "files": [
+        "app/Helpers/helpers.php"
+    ],
+    // ... other autoload settings ...
+}
+
+
+composer dump-autoload 
+
+git fetch origin
+git checkout feature/4-purchases-module
+
+php artisan make:model Purchase -m -f
+php artisan make:model PurchaseDetail -m -f
+php artisan make:model PurchasePayment -m -f
+
+php artisan make:seeder PurchaseSeeder
+
+php artisan db:seed --class=PurchaseSeeder
+
+php artisan orchid:screen Purchase/Bill_ListScreen
+php artisan orchid:screen Purchase/Bill_EditScreen
+
+
+###
+#update to laravel 11
+#update to orchid 14.26
+
+1. Create a New Branch:
+#git fetch origin
+#git checkout orchid/7-orchid-update-v1426
+git checkout -b orchid/7-orchid-update-v1426
+
+
+2. Remove All Files:
+#Delete all files in your working directory (except for any necessary configuration files or .gitignore).
+git rm -r *
+git rm -r --cached .
+git add .
+#delete manual ja senang...
+
+
+3. Commit the Removal:
+#Commit the removal of files:
+git commit -m "Clear all files for Laravel 11"
+
+4. Install Laravel 11:
+#Install Laravel 11 using Composer (make sure you have Composer installed):
+composer create-project laravel/laravel:^11.0 .
+#tak boleh...
+install kat tempat lain, pastu copy paste ja
+
+app/Helpers/helpers.php issue lepas install Laravel 11
+kena dump semula 
+
+composer dump-autoload
+
+===========
+git fetch origin
+git checkout feature/10-add-nav-link-to-stock-adjustment-ref
+
+
+===========
+git checkout -b feature/11-purchase-payment
+
+
+===========
+git fetch origin
+git checkout feature/14-purchase-return-feature
+
+php artisan make:model PurchaseReturn -m
+php artisan make:model PurchaseReturnItem -m
+
+###
+rule validation
+
+use Illuminate\Support\Facades\Validator;
+
+$validator = Validator::make($request->all(), [
+    'payment.date' => 'required|date',
+    'payment.reference' => 'required|string|max:255',
+    'payment.amount' => [
+        'required',
+        'numeric',
+        function ($attribute, $value, $fail) use ($request) {
+            if ($value > $request->input('purchase.due_amount')) {
+                $fail('The payment amount should not exceed the due amount.');
+            }
+        },
+    ],
+    'payment.note' => 'nullable|string|max:1000',
+    'payment.purchase_id' => 'required',
+    'payment.payment_method' => 'required|string|max:255',
+    'purchase.due_amount' => 'required|numeric',
+]);
+
+if ($validator->fails()) {
+    return redirect()->back()
+        ->withErrors($validator)
+        ->withInput();
+}
+
+// Continue with your logic if validation passes
+
+
+php artisan make:rule ValueNotExceed
+
+<?php
+
+namespace App\Rules;
+
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
+
+class AmountNotExceedDue implements ValidationRule
+{
+    protected $dueAmount;
+
+    /**
+     * Create a new rule instance.
+     *
+     * @param  float  $dueAmount
+     * @return void
+     */
+    public function __construct($dueAmount)
+    {
+        $this->dueAmount = $dueAmount;
+    }
+
+    /**
+     * Run the validation rule.
+     *
+     * @param  \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString  $fail
+     */
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        if ($value > $this->dueAmount) {
+            $fail('The payment amount should not exceed the due amount.');
+        }
+    }
+}
+
+###
+git checkout -b bugs/purchase_fixed_001
+
+
+###
+git fetch origin
+git checkout feature/5-orders-module
+
+### 
+## update to laravel 11.21.0
+composer update laravel/framework --with-all-dependencies
+
+## update to orchid 14.30.1
+composer update orchid/platform --with-dependencies
+
