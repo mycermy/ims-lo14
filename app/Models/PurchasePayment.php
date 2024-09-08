@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Orchid\Presenters\PurchasePaymentPresenter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -67,5 +68,9 @@ class PurchasePayment extends Model
 
     public function scopeByPurchase($query) {
         return $query->where('purchase_id', request()->route('purchase_id'));
+    }
+
+    public function presenter() {
+        return new PurchasePaymentPresenter($this);
     }
 }

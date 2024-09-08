@@ -10,6 +10,7 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -84,15 +85,16 @@ class PurchasePayments_ListScreen extends Screen
                         Link::make($target->purchase->reference)
                             ->route('platform.purchases.view', $target->purchase)
                     ),
-                TD::make('reference')->width(150)
-                    ->render(
-                        fn($target) =>
-                        Link::make($target->reference)
-                            ->route('platform.purchases.payments', $target->purchase)
-                    ),
+                TD::make('reference')//->width(150)
+                    ->render(fn($target) => new Persona($target->presenter())),
+                    // ->render(
+                    //     fn($target) =>
+                    //     Link::make($target->reference)
+                    //         ->route('platform.purchases.payments', $target->purchase)
+                    // ),
                 TD::make('payment_method', 'Payment Method')->alignCenter()->width(150),
                 TD::make('amount')->alignRight()->width(50),
-                TD::make('note'),
+                // TD::make('note'),
                 TD::make('updated_by')->alignRight()->width(150)
                     ->render(fn($target) => $target->updatedBy->name ?? null),
             ]),

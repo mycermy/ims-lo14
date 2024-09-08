@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Orchid\Presenters\PurchaseReturnPresenter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
@@ -35,5 +36,9 @@ class PurchaseReturn extends Model
      */
     public function updatedBy() {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function presenter() {
+        return new PurchaseReturnPresenter($this);
     }
 }
