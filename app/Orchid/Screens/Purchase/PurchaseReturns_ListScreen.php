@@ -13,6 +13,7 @@ use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Components\Cells\DateTimeSplit;
 use Orchid\Screen\Components\Cells\Time;
 use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -81,21 +82,23 @@ class PurchaseReturns_ListScreen extends Screen
             Layout::table('model', [
                 TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('created_at','Date')->width(150)->asComponent(DateTimeSplit::class),
-                TD::make('reference', 'Return Reference')->width(150)
-                    ->render(
-                        fn($target) =>
-                        Link::make($target->reference)
-                            ->route('platform.purchases.returns', $target->purchase)
-                    ),
                 TD::make('bill')->width(150)
                     ->render(
                         fn($target) =>
                         Link::make($target->purchase->reference)
                             ->route('platform.purchases.view', $target->purchase)
                     ),
+                TD::make('reference', 'Return Reference')//->width(150)
+                    ->render(fn ($target) => new Persona($target->presenter())),
+                    // ->render(
+                    //     fn($target) =>
+                    //     Link::make($target->reference)
+                    //         ->route('platform.purchases.returns', $target->purchase)
+                    // ),
                 TD::make('total_amount')->alignRight()->width(50),
-                TD::make('reason'),
-                TD::make('updated_by', 'Updated By')->alignRight()->render(fn($target) => $target->updatedBy->name ?? null),
+                // TD::make('reason'),
+                TD::make('updated_by', 'Updated By')->alignRight()->width(150)
+                    ->render(fn($target) => $target->updatedBy->name ?? null),
             ]),
         ];
     }

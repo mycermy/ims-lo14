@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Sales\Order;
+use App\Models\Sales\OrderItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -56,21 +58,24 @@ class Product extends Model
     /**
      * @return BelongsTo
      */
-    public function category(){
+    public function category()
+    {
         return $this->belongsTo(Category::class);
     }
 
     /**
      * @return BelongsTo
      */
-    public function createdBy(){
+    public function createdBy()
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
      * @return BelongsTo
      */
-    public function updatedBy(){
+    public function updatedBy()
+    {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
@@ -89,34 +94,46 @@ class Product extends Model
     // }
 
     /**
-     * @return HasMany
+     * @return BelongsToMany
      */
-    // public function orderDetails(){
-    //     return $this->hasMany(OrderDetail::class);
-    // }
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, OrderItem::class)->withPivot('quantity', 'unit_price', 'sub_total');
+    }
 
     /**
      * @return HasMany
      */
-    public function purchaseDetails(){
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function purchaseDetails()
+    {
         return $this->hasMany(PurchaseDetail::class);
     }
 
     /**
      * @return HasMany
      */
-    public function purchaseReturnItems(){
+    public function purchaseReturnItems()
+    {
         return $this->hasMany(PurchaseReturnItem::class);
     }
 
     /**
      * @return HasMany
      */
-    public function adjustedProducts(){
+    public function adjustedProducts()
+    {
         return $this->hasMany(AdjustedProduct::class);
     }
 
     // ===================== ORM Definition END ===================== //
 
-    
+
 }

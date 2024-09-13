@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Sales\OrderPayment;
 
-use App\Models\Purchase;
-use App\Models\PurchasePayment;
+use App\Models\Sales\Order;
+use App\Models\Sales\OrderPayment;
 use App\Rules\AmountNotExceedDue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,20 +18,20 @@ use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
-class BillPayment_EditScreen extends Screen
+class OrderPayment_EditScreen extends Screen
 {
-    // built-in purchase id as default. 
-    public ?Purchase $purchase = null;
-    public ?PurchasePayment $payment  = null;
+    // built-in order id as default. 
+    public ?Order $order = null;
+    public ?OrderPayment $payment  = null;
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(Purchase $purchase, PurchasePayment $payment): iterable
+    public function query(Order $order, OrderPayment $payment): iterable
     {
         return [
-            'purchase' => $purchase,
+            'order' => $order,
             'payment' => $payment,
         ];
     }
@@ -43,10 +43,10 @@ class BillPayment_EditScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Bill: ' . $this->purchase->reference . ' >> ' .
+        return 'Order: ' . $this->order->reference . ' >> ' .
             ($this->payment->exists
                 ? 'Edit Payment: ' . $this->payment->reference
-                : 'New Bill Payment');
+                : 'New Order Payment');
     }
 
     /**
@@ -64,12 +64,12 @@ class BillPayment_EditScreen extends Screen
 
             // Button::make(__('Update'))
             //     ->icon('bs.check-circle')
-            //     ->canSee($this->purchasePayment->exists)
+            //     ->canSee($this->OrderPayment->exists)
             //     ->method('store'),
 
             Link::make(__('Cancel'))
                 ->icon('bs.x-circle')
-                ->route('platform.purchases.payments', $this->purchase),
+                ->route('platform.orders.payments', $this->order),
         ];
     }
 
@@ -80,8 +80,8 @@ class BillPayment_EditScreen extends Screen
      */
     public function layout(): iterable
     {
-        $number = PurchasePayment::max('id') + 1;
-        $refid = make_reference_id('PV', $number);
+        $number = OrderPayment::max('id') + 1;
+        $refid = make_reference_id('SP', $number);
         $harini = now()->toDateString(); //dd($harini);
 
         return [
@@ -104,9 +104,9 @@ class BillPayment_EditScreen extends Screen
                 ])->fullWidth(),
                 //
                 Group::make([
-                    Input::make('purchase.due_amount')
+                    Input::make('order.due_amount')
                         ->title('Due Amount')
-                        ->value($this->purchase->due_amount)
+                        ->value($this->order->due_amount)
                         ->readonly(),
                     //
                     Input::make('payment.amount')
@@ -116,13 +116,13 @@ class BillPayment_EditScreen extends Screen
                     Select::make('payment.payment_method')
                         ->title('Payment Method')
                         ->options([
-                            PurchasePayment::PAYMENT_CASH => PurchasePayment::PAYMENT_CASH,
-                            PurchasePayment::PAYMENT_QRCODE => PurchasePayment::PAYMENT_QRCODE,
-                            PurchasePayment::PAYMENT_BANK_TRANSFER => PurchasePayment::PAYMENT_BANK_TRANSFER,
-                            PurchasePayment::PAYMENT_CREDIT_CARD => PurchasePayment::PAYMENT_CREDIT_CARD,
-                            PurchasePayment::PAYMENT_CHEQUE => PurchasePayment::PAYMENT_CHEQUE,
-                            PurchasePayment::PAYMENT_OTHER => PurchasePayment::PAYMENT_OTHER,
-                            PurchasePayment::PAYMENT_REFUND => PurchasePayment::PAYMENT_REFUND,
+                            OrderPayment::PAYMENT_CASH => OrderPayment::PAYMENT_CASH,
+                            OrderPayment::PAYMENT_QRCODE => OrderPayment::PAYMENT_QRCODE,
+                            OrderPayment::PAYMENT_BANK_TRANSFER => OrderPayment::PAYMENT_BANK_TRANSFER,
+                            OrderPayment::PAYMENT_CREDIT_CARD => OrderPayment::PAYMENT_CREDIT_CARD,
+                            OrderPayment::PAYMENT_CHEQUE => OrderPayment::PAYMENT_CHEQUE,
+                            OrderPayment::PAYMENT_OTHER => OrderPayment::PAYMENT_OTHER,
+                            OrderPayment::PAYMENT_REFUND => OrderPayment::PAYMENT_REFUND,
                         ])
                         ->empty('No select')
                         ->required(),
@@ -134,8 +134,8 @@ class BillPayment_EditScreen extends Screen
                     ->rows(3)
                     ->max(1000),
                 // 
-                Input::make('payment.purchase_id')
-                    ->value($this->purchase->id)
+                Input::make('payment.order_id')
+                    ->value($this->order->id)
                     ->type('hidden'),
                 //
             ]),
@@ -145,25 +145,25 @@ class BillPayment_EditScreen extends Screen
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request, PurchasePayment $payment)
+    public function store(Request $request, OrderPayment $payment)
     {
         // kalo edit
-        // if ($this->purchase->exists) {
-        //     $this->removeOldPurchaseDetails($purchase);
+        // if ($this->order->exists) {
+        //     $this->removeOldorderDetails($order);
         // }
         // 
 
         $request->validate([
             'payment.date' => 'required|date',
             'payment.reference' => 'required|string|max:255',
-            // 'payment.amount' => ['required', 'numeric', new AmountNotExceedDue($request->input('purchase.due_amount'))],
+            // 'payment.amount' => ['required', 'numeric', new AmountNotExceedDue($request->input('order.due_amount'))],
             'payment.amount' => [
                 'required',
                 'numeric',
-                new AmountNotExceedDue($request->input('purchase.due_amount'), 'The payment amount should not exceed the due amount.')
+                new AmountNotExceedDue($request->input('order.due_amount'), 'The payment amount should not exceed the due amount.')
             ],
             'payment.note' => 'nullable|string|max:1000',
-            'payment.purchase_id' => 'required',
+            'payment.order_id' => 'required',
             'payment.payment_method' => 'required|string|max:255',
         ]);
 
@@ -175,29 +175,29 @@ class BillPayment_EditScreen extends Screen
         $payment->save();
 
 
-        // update purchase
-        $purchase = Purchase::findOrFail($request->input('payment.purchase_id'));
+        // update order
+        $order = Order::findOrFail($request->input('payment.order_id'));
 
-        $paidAmount = $purchase->paid_amount + $request->input('payment.amount');
+        $paidAmount = $order->paid_amount + $request->input('payment.amount');
 
-        $dueAmount = $purchase->due_amount - $request->input('payment.amount');
+        $dueAmount = $order->due_amount - $request->input('payment.amount');
 
         $paymentStatus = match (true) {
-            $dueAmount == $purchase->total_amount => PurchasePayment::STATUS_UNPAID,
-            $dueAmount > 0 => PurchasePayment::STATUS_PARTIALLY_PAID,
-            $dueAmount < 0 => PurchasePayment::STATUS_OVERPAID,
-            default => PurchasePayment::STATUS_PAID,
+            $dueAmount == $order->total_amount => OrderPayment::STATUS_UNPAID,
+            $dueAmount > 0 => OrderPayment::STATUS_PARTIALLY_PAID,
+            $dueAmount < 0 => OrderPayment::STATUS_OVERPAID,
+            default => OrderPayment::STATUS_PAID,
         };
 
-        $purchase->update([
+        $order->update([
             'paid_amount' => $paidAmount,
             'due_amount' => $dueAmount,
             'payment_status' => $paymentStatus,
-            'status' => $paymentStatus == PurchasePayment::STATUS_PAID ? Purchase::STATUS_COMPLETED : $purchase->status,
+            'status' => $paymentStatus == OrderPayment::STATUS_PAID ? Order::STATUS_COMPLETED : $order->status,
         ]);
 
-        Toast::info(__('Purchase Payment was saved.'));
+        Toast::info(__('Order Payment was saved.'));
 
-        return redirect()->route('platform.purchases.payments', $purchase);
+        return redirect()->route('platform.orders.payments', $order);
     }
 }

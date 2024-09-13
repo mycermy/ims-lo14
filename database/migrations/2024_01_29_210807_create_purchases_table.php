@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Contact;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->timestamps();
 
-            $table->foreignIdFor(Contact::class, 'supplier_id')
+            $table->foreignIdFor(Supplier::class, 'supplier_id')
                   ->constrained('contacts')
                   ->cascadeOnUpdate()
                   ->restrictOnDelete();

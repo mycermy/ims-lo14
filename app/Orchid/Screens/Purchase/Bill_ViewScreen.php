@@ -116,7 +116,7 @@ class Bill_ViewScreen extends Screen
                             ->route('platform.purchases.view', $target)
                     ),
                 TD::make('supplier_name', 'Supplier'),
-                TD::make('updated_by')->alignRight()->render(fn($target) => $target->updatedBy->name ?? null),
+                TD::make('updated_by', 'Updated By')->alignRight()->render(fn($target) => $target->updatedBy->name ?? null),
             ]),
 
             Layout::rows([
@@ -184,7 +184,7 @@ class Bill_ViewScreen extends Screen
                         ->canSee(($target->quantity > $target->quantity_return)
                                 && ($this->purchase->status == Purchase::STATUS_APPROVED || $this->purchase->status == Purchase::STATUS_COMPLETED)
                         )
-                        ->route('platform.purchases.returnbypurchasedatails.create', [$this->purchase, $target]),
+                        ->route('platform.purchases.returnbypurchasedetails.create', [$this->purchase, $target]),
                 ]),
         ]);
     }

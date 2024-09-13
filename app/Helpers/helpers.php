@@ -32,6 +32,8 @@
 //     }
 // }
 
+use App\Models\Product;
+
 if (!function_exists('make_reference_id')) {
     function make_reference_id($prefix, $number) {
         $padded_text = $prefix . '-' . date('Y') . '-' . str_pad($number, 5, 0, STR_PAD_LEFT);
@@ -60,3 +62,22 @@ if (!function_exists('make_reference_id')) {
 //         return $merged;
 //     }
 // }
+
+if (!function_exists('updateStock')) {
+    function updateStock($productID, $purchaseQty, $type)
+        {
+            $product = Product::findOrFail($productID);
+            $updateQty = 0;
+    
+            if ($type == 'add') {
+                $updateQty = $product->quantity + $purchaseQty;
+            } else if ($type == 'sub') {
+                $updateQty = $product->quantity - $purchaseQty;
+            }
+    
+            // Update stock quantity in the product
+            $product->update([
+                'quantity' => $updateQty
+            ]);
+        }
+}

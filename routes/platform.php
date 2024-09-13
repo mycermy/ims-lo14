@@ -108,3 +108,4 @@ require __DIR__ . '/project/product.php';
 require __DIR__ . '/project/stockadjustment.php';
 require __DIR__ . '/project/contact.php';
 require __DIR__ . '/project/purchase.php';
+require __DIR__ . '/project/sales.php';

@@ -34,7 +34,7 @@ class PlatformProvider extends OrchidServiceProvider
     public function menu(): array
     {
         return [
-            Menu::make('Get Started')
+            Menu::make('Dashboard')
                 ->icon('bs.book')
                 ->title('Navigation')
                 ->route(config('platform.index'))
@@ -48,7 +48,7 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Stock Adjustments')->route('platform.products.stockadjustments'),
                 ])
                 ->permission('platform.products.index')
-                ->title('Products Management Module')
+                ->title('Products Management')
                 ->divider(),
 
             Menu::make('Purchases')
@@ -59,14 +59,25 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Purchase Returns')->route('platform.purchasereturns'),
                 ])
                 ->permission('platform.purchases.index')
-                ->title('Purchases Management Module')
+                ->title('Purchases Management')
+                ->divider(),
+
+            Menu::make('Sales')
+                ->icon('bs.card-list')
+                ->list([
+                    Menu::make('Orders')->route('platform.orders'),
+                    // Menu::make('Order Payments')->route('platform.orderpayments'),
+                    // Menu::make('Order Returns')->route('platform.orderreturns'),
+                ])
+                ->permission('platform.purchases.index')
+                ->title('Sales Management')
                 ->divider(),
                 
             Menu::make('Contacts')
                 ->icon('bs.card-list')
                 ->permission('platform.contacts.index')
                 ->route('platform.contacts')
-                ->title('CRM Module'),
+                ->title('CRM'),
                 
             Menu::make('Addresses')
                 ->icon('bs.card-list')

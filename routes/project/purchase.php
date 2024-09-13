@@ -76,10 +76,10 @@ Route::screen('purchases/{purchase?}/create-return', BillReturn_EditScreen::clas
 
 // Platfrom > Purchases > Return Single > Create
 Route::screen('purchases/{purchase?}/{purchaseDetail?}/create-return', BillReturnSingle_CreateScreen::class)
-    ->name('platform.purchases.returnbypurchasedatails.create')
+    ->name('platform.purchases.returnbypurchasedetails.create')
     ->breadcrumbs(fn (Trail $trail, $purchase, $purchaseDetail) => $trail
         ->parent('platform.purchases.view', $purchase)
-        ->push(__('Create Return'), route('platform.purchases.returnbypurchasedatails.create')));
+        ->push(__('Create Return'), route('platform.purchases.returnbypurchasedetails.create')));
 
 // Platfrom > Purchases > Deleted
 Route::screen('deleted/purchases', DeletedContact_ListScreen::class)

@@ -95,7 +95,7 @@ class PurchasePayments_ListScreen extends Screen
                 TD::make('payment_method', 'Payment Method')->alignCenter()->width(150),
                 TD::make('amount')->alignRight()->width(50),
                 // TD::make('note'),
-                TD::make('updated_by')->alignRight()->width(150)
+                TD::make('updated_by', 'Updated By')->alignRight()->width(150)
                     ->render(fn($target) => $target->updatedBy->name ?? null),
             ]),
         ];

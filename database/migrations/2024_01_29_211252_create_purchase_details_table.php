@@ -15,16 +15,6 @@ return new class extends Migration
     {
         Schema::create('purchase_details', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignIdFor(Purchase::class)
-                  ->constrained()
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
-
-            $table->foreignIdFor(Product::class)
-                  ->constrained()
-                  ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
             // $table->string('product_name');
             // $table->string('product_code');
             $table->integer('quantity');
@@ -36,6 +26,16 @@ return new class extends Migration
             $table->string('product_discount_type')->default('fixed');
             $table->decimal('product_tax_amount', 20)->default(0.00);
             $table->timestamps();
+
+            $table->foreignIdFor(Purchase::class)
+                  ->constrained()
+                  ->cascadeOnUpdate()
+                  ->cascadeOnDelete();
+
+            $table->foreignIdFor(Product::class)
+                  ->constrained()
+                  ->cascadeOnUpdate()
+                  ->cascadeOnDelete();
 
             // 
         });
