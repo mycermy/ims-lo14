@@ -111,7 +111,7 @@ class Bill_EditScreen extends Screen
 
             // Update stock quantity in the product
             if ($request->input('purchase.status') == Purchase::STATUS_APPROVED) {
-                updateStock($item['product_id'], $item['quantity'], 'add');
+                updateStock($item['product_id'], $item['quantity'], 'purchase');
             }
             //
             $totalAmount += $subTotal;
@@ -136,7 +136,7 @@ class Bill_EditScreen extends Screen
         foreach ($oldPurchaseDetails as $oldPurchaseDetail) {
             // Update stock quantity in the product -> reverse
             if ($oldPurchaseStatus == Purchase::STATUS_APPROVED) {
-                updateStock($oldPurchaseDetail->product_id, $oldPurchaseDetail->quantity, 'sub');
+                updateStock($oldPurchaseDetail->product_id, $oldPurchaseDetail->quantity, 'purchaseRemove');
             }
 
             $oldPurchaseDetail->delete();
@@ -150,7 +150,7 @@ class Bill_EditScreen extends Screen
     //     foreach ($items as $item) {
     //         // Product::where('id', $product->product_id)
     //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-    //         updateStock($item->product_id, $item->quantity, 'add');
+    //         updateStock($item->product_id, $item->quantity, 'purchase');
     //     }
 
     //     Purchase::findOrFail($purchase->id)
@@ -172,7 +172,7 @@ class Bill_EditScreen extends Screen
     //     foreach ($items as $item) {
     //         // Product::where('id', $product->product_id)
     //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-    //         updateStock($item->product_id, $item->quantity, 'sub');
+    //         updateStock($item->product_id, $item->quantity, 'purchaseRevoke');
     //     }
 
     //     Purchase::findOrFail($purchase->id)

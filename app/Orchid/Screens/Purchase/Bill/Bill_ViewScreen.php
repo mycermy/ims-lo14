@@ -187,7 +187,7 @@ class Bill_ViewScreen extends Screen
         $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
 
         foreach ($purchaseDetails as $purchaseDetail) {
-            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+            updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'purchase');
         }
 
         Purchase::findOrFail($purchase->id)
@@ -212,7 +212,7 @@ class Bill_ViewScreen extends Screen
         foreach ($purchaseDetails as $purchaseDetail) {
             // Product::where('id', $product->product_id)
             //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'sub');
+            updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'purchaseRevoke');
         }
 
         Purchase::findOrFail($purchase->id)
@@ -226,22 +226,5 @@ class Bill_ViewScreen extends Screen
         Toast::warning(__('Purchase approval has been revoked!'));
 
         return redirect()->route('platform.purchases.view', $this->purchase);
-    }
-
-    public function updateStock($productID, $purchaseQty, $type)
-    {
-        $product = Product::findOrFail($productID);
-        $updateQty = 0;
-
-        if ($type == 'add') {
-            $updateQty = $product->quantity + $purchaseQty;
-        } else if ($type == 'sub') {
-            $updateQty = $product->quantity - $purchaseQty;
-        }
-
-        // Update stock quantity in the product
-        $product->update([
-            'quantity' => $updateQty
-        ]);
     }
 }

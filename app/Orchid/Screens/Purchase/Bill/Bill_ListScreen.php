@@ -175,7 +175,7 @@ class Bill_ListScreen extends Screen
         $purchaseDetails = $purchase->purchaseDetails()->get();
 
         foreach ($purchaseDetails as $purchaseDetail) {
-            $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+            updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'purchase');
         }
 
         $purchase->update([
@@ -189,23 +189,6 @@ class Bill_ListScreen extends Screen
         Toast::info(__('Purchase has been approved.'));
     }
 
-    public function updateStock($productID, $purchaseQty, $type)
-    {
-        $product = Product::findOrFail($productID);
-        $updateQty = 0;
-
-        if ($type == 'add') {
-            $updateQty = $product->quantity + $purchaseQty;
-        } else if ($type == 'sub') {
-            $updateQty = $product->quantity - $purchaseQty;
-        }
-
-        // Update stock quantity in the product
-        $product->update([
-            'quantity' => $updateQty
-        ]);
-    }
-
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -216,7 +199,7 @@ class Bill_ListScreen extends Screen
         // child
         foreach ($purchase->purchaseDetails as $existingPurchaseDetail) {
             // rollback stock qty in product table
-            $this->updateStock($existingPurchaseDetail['product_id'], $existingPurchaseDetail['quantity'], 'sub');
+            updateStock($existingPurchaseDetail['product_id'], $existingPurchaseDetail['quantity'], 'purchaseRemove');
         }
 
         // parent

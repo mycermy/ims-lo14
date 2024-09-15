@@ -33,6 +33,7 @@
 // }
 
 use App\Models\Product;
+use Orchid\Support\Facades\Toast;
 
 if (!function_exists('make_reference_id')) {
     function make_reference_id($prefix, $number) {
@@ -64,25 +65,32 @@ if (!function_exists('make_reference_id')) {
 // }
 
 if (!function_exists('updateStock')) {
-    function updateStock(int $productId, int $quantity, string $type): void
+    function updateStock(int $productId, int $quantity, string $type): bool
     {
         $product = Product::findOrFail($productId);
         
         $updateQuantity = calculateNewQuantity($product->quantity, $quantity, $type);
 
+        if ($updateQuantity === false) {
+            Toast::warning(__('Invalid stock update type: :type', ['type' => $type]));
+            return false;
+        }
+
         // Update stock quantity in the product
         $product->update(['quantity' => $updateQuantity]);
+        return true;
     }
 
     function calculateNewQuantity(int $currentQuantity, int $changeQuantity, string $type): int
     {
-        $incrementTypes = ['add', 'purchase', 'salesReturn'];
-        $decrementTypes = ['sub', 'purchaseReturn', 'sales'];
+        $incrementTypes = ['add', 'purchase', 'salesReturn', 'salesRemove'];
+        $decrementTypes = ['sub', 'purchaseReturn', 'purchaseRevoke', 'purchaseRemove', 'sales'];
 
         return match (true) {
             in_array($type, $incrementTypes) => $currentQuantity + $changeQuantity,
             in_array($type, $decrementTypes) => $currentQuantity - $changeQuantity,
-            default => throw new InvalidArgumentException("Invalid stock update type: {$type}"),
+            // default => throw new InvalidArgumentException("Invalid stock update type: {$type}"),
+            default => false,
         };
     }
 }

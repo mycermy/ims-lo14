@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Purchase\PurchaseDetail;
+use App\Models\Purchase\PurchaseReturnItem;
 use App\Models\Sales\Order;
 use App\Models\Sales\OrderItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
