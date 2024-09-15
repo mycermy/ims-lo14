@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Purchase;
 
+use App\Models\User;
 use App\Orchid\Presenters\PurchaseReturnPresenter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

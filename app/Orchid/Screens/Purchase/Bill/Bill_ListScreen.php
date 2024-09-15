@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Purchase\Bill;
 
 use App\Models\Product;
 use Orchid\Screen\TD;
-use App\Models\Purchase;
-use App\Models\PurchaseDetail;
-use App\Models\PurchasePayment;
+use App\Models\Purchase\Purchase;
+use App\Models\Purchase\PurchasePayment;
 use Orchid\Screen\Screen;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Link;

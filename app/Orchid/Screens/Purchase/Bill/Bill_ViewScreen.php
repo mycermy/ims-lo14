@@ -1,25 +1,18 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Purchase\Bill;
 
-use App\Models\Contact;
 use App\Models\Product;
-use App\Models\Purchase;
-use App\Models\PurchaseDetail;
-use App\Models\PurchasePayment;
-use App\Orchid\Support\Facades\Layout_mod;
-use Illuminate\Http\Request;
+use App\Models\Purchase\Purchase;
+use App\Models\Purchase\PurchaseDetail;
+use App\Models\Purchase\PurchasePayment;
+use App\Orchid\Screens\Purchase\TabMenuPurchase;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Actions\Menu;
-use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
-use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Label;
-use Orchid\Screen\Fields\Relation;
-use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -38,7 +31,7 @@ class Bill_ViewScreen extends Screen
     {
         return [
             'purchase' => $purchase,
-            'purchaseDetail' => $purchase->purchaseDetails()->get(),
+            'purchaseDetails' => $purchase->purchaseDetails()->get(),
             'purchase_model' => Purchase::where('id', $purchase->id)->get(),
         ];
     }
@@ -131,7 +124,7 @@ class Bill_ViewScreen extends Screen
                 // 
             ]),
 
-            Layout::table('purchaseDetail', [
+            Layout::table('purchaseDetails', [
                 TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('product_id', 'Code')
                     // ->render(fn ($target) => $target->product->code ?? null),

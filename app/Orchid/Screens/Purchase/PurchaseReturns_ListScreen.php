@@ -2,22 +2,13 @@
 
 namespace App\Orchid\Screens\Purchase;
 
-use App\Models\Purchase;
-use App\Models\PurchasePayment;
-use App\Models\PurchaseReturn;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Orchid\Screen\Actions\Button;
+use App\Models\Purchase\PurchaseReturn;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Components\Cells\DateTimeSplit;
-use Orchid\Screen\Components\Cells\Time;
-use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
-use Orchid\Support\Facades\Toast;
 
 class PurchaseReturns_ListScreen extends Screen
 {

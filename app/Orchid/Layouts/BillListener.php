@@ -4,7 +4,7 @@ namespace App\Orchid\Layouts;
 
 use App\Models\Contact;
 use App\Models\Product;
-use App\Models\Sales\Order;
+use App\Models\Purchase\Purchase;
 use Illuminate\Http\Request;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
@@ -17,7 +17,7 @@ use Orchid\Screen\Layouts\Listener;
 use Orchid\Screen\Repository;
 use Orchid\Support\Facades\Layout;
 
-class OrderTotalListener extends Listener
+class BillListener extends Listener
 {
     /**
      * List of field names for which values will be listened.
@@ -25,23 +25,10 @@ class OrderTotalListener extends Listener
      * @var string[]
      */
     protected $targets = [
-        // 'minuend',
-        // 'subtrahend',
-        'orderItems.[{index}].[quantity]',
-        'orderItems.0.quantity',
-        'order.customer_id',
-        'order.note',
-        'order.status',
+        'purchase.supplier_id',
+        'purchase.note',
+        'purchase.status',
     ];
-
-    // /**
-    //  * What screen method should be called
-    //  * as a source for an asynchronous request.
-    //  *
-    //  * @var string
-    //  */
-    // protected $asyncMethod = 'asyncCalculateTotal';
-
 
     /**
      * The screen's layout elements.
@@ -50,77 +37,63 @@ class OrderTotalListener extends Listener
      */
     protected function layouts(): iterable
     {
-        $number = Order::max('id') + 1;
-        $refid = make_reference_id('INV', $number);
+        $number = Purchase::max('id') + 1;
+        $refid = make_reference_id('PR', $number);
         // $harini = now()->toDateString(); //dd($harini);
         $harini = now()->format('d M Y'); //dd($harini);
 
         return [
-            // Layout::rows([
-            //     Input::make('minuend')
-            //         ->title('First argument')
-            //         ->type('number'),
-
-            //     Input::make('subtrahend')
-            //         ->title('Second argument')
-            //         ->type('number'),
-
-            //     Input::make('result')
-            //         ->readonly(),
-            //         // ->canSee($this->query->has('result')),
-            // ]),
-
             Layout::rows([
                 Group::make([
-                    Input::make('order.reference')
+                    Input::make('purchase.reference')
                         ->title('Reference')
                         ->required()
                         ->value($refid)
-                        ->readonly(),
+                        ->disabled(),
                     //
-                    DateTimer::make('order.date')
+                    DateTimer::make('purchase.date')
                         ->title('Date')
                         ->format('d M Y')
                         ->required()
                         ->value($harini)
                         ->allowInput(),
                     //
-                    Relation::make('order.customer_id')
-                        ->title('Customer')
+                    Relation::make('purchase.supplier_id')
+                        ->title('Supplier')
                         ->fromModel(Contact::class, 'name')
-                        ->applyScope('customer')
+                        ->applyScope('supplier')
                         ->searchColumns('name', 'phone', 'email')
                         ->chunk(10)
                         ->required(),
                 ])->fullWidth(),
                 //
-                TextArea::make('order.note')
+                TextArea::make('purchase.note')
                     ->title('Note (If Needed)')
                     ->rows(3)
                     ->horizontal(),
                 // 
-                Matrix::make('orderItems')
-                    ->title('Order Details')
+                Matrix::make('purchaseItems')
+                    ->title('Purchase Details')
                     ->removeableRows(false)
                     ->columns(['id', 'Product' => 'product_id', 'quantity', 'Unit Price' => 'unit_price', 'sub_total'])
                     ->fields([
                         'id' => Input::make('id')->readonly()->type('hidden'),
                         'product_id' => Relation::make('product_id')->fromModel(Product::class, 'name')->readonly()->searchColumns('name', 'code', 'part_number')->chunk(10)->required(),
                         'quantity' => Input::make('quantity')->type('number')->required(),
-                        'unit_price' => Input::make('unit_price')->readonly(),
+                        'unit_price' => Input::make('unit_price')->required(),
                         'sub_total' => Input::make('sub_total')->readonly(),
                     ]),
                 //
-                Input::make('orderTotal')
+                Input::make('purchaseTotal')
                     ->title('Total')
                     ->readonly()
                     ->horizontal(),
                 //
-                Select::make('order.status')
-                    ->title('Order Status')
+                Select::make('purchase.status')
+                    ->title('Purchase Status')
                     ->options([
-                        Order::STATUS_PENDING => Order::STATUS_PENDING,
-                        Order::STATUS_APPROVED => Order::STATUS_APPROVED,
+                        Purchase::STATUS_PENDING => Purchase::STATUS_PENDING,
+                        Purchase::STATUS_APPROVED => Purchase::STATUS_APPROVED,
                     ])
                     // ->empty('No select')
                     ->horizontal(),
@@ -138,36 +111,28 @@ class OrderTotalListener extends Listener
      */
     public function handle(Repository $repository, Request $request): Repository
     {
-        $minuend = $request->input('minuend');
-        $subtrahend = $request->input('subtrahend');
-
-        $items = $request->get('orderItems', []);
+        $items = $request->get('purchaseItems', []);
         $modifiedItems = [];
-        $total = 0;
+        $totalAmount = 0;
 
         foreach ($items as $item) {
             $product = Product::find($item['product_id']);
-            if ($product) {
-                $quantity = floatval($item['quantity'] ?? 0);
-                $price = floatval($product->sell_price ?? 0);
-                $subTotal = $quantity * $price;
-                $total += $subTotal;
 
-                $item['unit_price'] = number_format($price, 2);
-                $item['sub_total'] = number_format($subTotal, 2);
+            $quantity = floatval($item['quantity'] ?? 0);
+            $price = floatval($item['unit_price'] ?? 0);
+            $subTotal = $quantity * $price;
+            
+            $item['sub_total'] = number_format($subTotal, 2);
+            $modifiedItems[] = $item;
 
-                $modifiedItems[] = $item;
-            }
+            $totalAmount += $subTotal;
         }
 
         return $repository
-            // ->set('minuend', $minuend)
-            // ->set('subtrahend', $subtrahend)
-            // ->set('result', $minuend - $subtrahend)
-            ->set('orderItems', array_values($modifiedItems))
-            ->set('orderTotal', number_format($total, 2))
-            ->set('order.customer_id', $request->input('order.customer_id'))
-            ->set('order.status', $request->input('order.status'))
-            ;
+            ->set('purchaseItems', array_values($modifiedItems))
+            ->set('purchaseTotal', number_format($totalAmount, 2))
+            ->set('purchase.supplier_id', $request->input('purchase.supplier_id'))
+            ->set('purchase.status', $request->input('purchase.status'))
+        ;
     }
 }

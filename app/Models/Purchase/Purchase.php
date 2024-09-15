@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Purchase;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

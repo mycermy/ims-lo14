@@ -3,27 +3,16 @@
 namespace App\Orchid\Screens\Sales\Order;
 
 use Carbon\Carbon;
-use App\Models\Contact;
 use App\Models\Product;
 use App\Models\Customer;
 use Orchid\Screen\Screen;
 use App\Models\Sales\Order;
 use Illuminate\Http\Request;
 use App\Models\Sales\OrderItem;
-use App\Orchid\Layouts\OrderTotalListener;
+use App\Orchid\Layouts\OrderListener;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Fields\Group;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Matrix;
-use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Actions\Button;
 use Orchid\Support\Facades\Toast;
-use Orchid\Screen\Fields\Relation;
-use Orchid\Screen\Fields\TextArea;
-use Orchid\Support\Facades\Layout;
-use Illuminate\Support\Facades\Log;
-use Orchid\Screen\Fields\DateTimer;
-use Orchid\Screen\Repository;
 
 class Order_EditScreen extends Screen
 {
@@ -79,8 +68,7 @@ class Order_EditScreen extends Screen
     public function layout(): iterable
     {
         return [
-            
-            OrderTotalListener::class,
+            OrderListener::class,
         ];
     }
 

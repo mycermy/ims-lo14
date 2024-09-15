@@ -1,31 +1,22 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Purchase\Bill;
 
-use App\Models\Contact;
-use App\Models\Product;
-use App\Models\Purchase;
-use App\Models\PurchaseDetail;
+use App\Models\Purchase\Purchase;
+use App\Models\Purchase\PurchaseDetail;
 use App\Models\Supplier;
+use App\Orchid\Layouts\BillListener;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Fields\DateTimer;
-use Orchid\Screen\Fields\Group;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Matrix;
-use Orchid\Screen\Fields\Relation;
-use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
-use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
 class Bill_EditScreen extends Screen
 {
     public ?Purchase $purchase = null;
-    public $purchaseDetail;
+    public $item;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -35,7 +26,7 @@ class Bill_EditScreen extends Screen
     {
         return [
             'purchase' => $purchase,
-            'purchaseDetail' => $purchase->purchaseDetails()->get(),
+            'purchaseItems' => $purchase->purchaseDetails()->get(),
         ];
     }
 
@@ -80,62 +71,8 @@ class Bill_EditScreen extends Screen
      */
     public function layout(): iterable
     {
-        $number = Purchase::max('id') + 1;
-        $refid = make_reference_id('PR', $number);
-        // $harini = now()->toDateString(); //dd($harini);
-        $harini = now()->format('d M Y'); //dd($harini);
-
         return [
-            Layout::rows([
-                Group::make([
-                    Input::make('purchase.reference')
-                        ->title('Reference')
-                        ->required()
-                        ->value($refid)
-                        ->disabled(),
-                    //
-                    DateTimer::make('purchase.date')
-                        ->title('Date')
-                        ->format('d M Y')
-                        ->required()
-                        ->value($harini)
-                        ->allowInput(),
-                    //
-                    Relation::make('purchase.supplier_id')
-                        ->title('Supplier')
-                        ->fromModel(Contact::class, 'name')
-                        ->applyScope('supplier')
-                        ->searchColumns('name', 'phone', 'email')
-                        ->chunk(10)
-                        ->required(),
-                ])->fullWidth(),
-                //
-                TextArea::make('purchase.note')
-                    ->title('Note (If Needed)')
-                    ->rows(3)
-                    ->horizontal(),
-                // 
-                Matrix::make('purchaseDetail')
-                    ->title('Purchase Details')
-                    ->removeableRows(false)
-                    ->columns(['id', 'Product' => 'product_id', 'quantity', 'Unit Price' => 'unit_price', 'sub_total'])
-                    ->fields([
-                        'id' => Input::make('id')->readonly()->type('hidden'),
-                        'product_id' => Relation::make('product_id')->fromModel(Product::class, 'name')->readonly()->searchColumns('name', 'code', 'part_number')->chunk(10)->required(),
-                        'quantity' => Input::make('quantity')->type('number')->required(),
-                        'unit_price' => Input::make('unit_price')->required(),
-                        'sub_total' => Input::make('sub_total')->readonly(),
-                    ]),
-                //
-                Select::make('purchase.status')
-                    ->title('Purchase Status')
-                    ->options([
-                        Purchase::STATUS_PENDING => Purchase::STATUS_PENDING,
-                        Purchase::STATUS_APPROVED => Purchase::STATUS_APPROVED,
-                    ])
-                    // ->empty('No select')
-                    ->horizontal(),
-            ]),
+            BillListener::class,
         ];
     }
 
@@ -161,12 +98,12 @@ class Bill_EditScreen extends Screen
 
         $totalAmount = 0;
 
-        $purchaseDetails = $request->get('purchaseDetail');
-        foreach ($purchaseDetails as $purchaseDetail) {
-            $subTotal = $purchaseDetail['quantity'] * $purchaseDetail['unit_price'];
+        $items = $request->get('purchaseItems');
+        foreach ($items as $item) {
+            $subTotal = $item['quantity'] * $item['unit_price'];
 
             // Create a new PurchaseDetail instance
-            $newPurchaseDetail = new PurchaseDetail($purchaseDetail);
+            $newPurchaseDetail = new PurchaseDetail($item);
             $newPurchaseDetail->sub_total = $subTotal; // Set the sub_total attribute
 
             // Associate the new PurchaseDetail with the $purchase model
@@ -174,7 +111,7 @@ class Bill_EditScreen extends Screen
 
             // Update stock quantity in the product
             if ($request->input('purchase.status') == Purchase::STATUS_APPROVED) {
-                $this->updateStock($purchaseDetail['product_id'], $purchaseDetail['quantity'], 'add');
+                updateStock($item['product_id'], $item['quantity'], 'add');
             }
             //
             $totalAmount += $subTotal;
@@ -199,7 +136,7 @@ class Bill_EditScreen extends Screen
         foreach ($oldPurchaseDetails as $oldPurchaseDetail) {
             // Update stock quantity in the product -> reverse
             if ($oldPurchaseStatus == Purchase::STATUS_APPROVED) {
-                $this->updateStock($oldPurchaseDetail->product_id, $oldPurchaseDetail->quantity, 'sub');
+                updateStock($oldPurchaseDetail->product_id, $oldPurchaseDetail->quantity, 'sub');
             }
 
             $oldPurchaseDetail->delete();
@@ -208,12 +145,12 @@ class Bill_EditScreen extends Screen
 
     // public function approve(Purchase $purchase)
     // {
-    //     $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+    //     $items = PurchaseDetail::where('purchase_id', $purchase->id)->get();
 
-    //     foreach ($purchaseDetails as $purchaseDetail) {
+    //     foreach ($items as $item) {
     //         // Product::where('id', $product->product_id)
     //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-    //         $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'add');
+    //         updateStock($item->product_id, $item->quantity, 'add');
     //     }
 
     //     Purchase::findOrFail($purchase->id)
@@ -230,12 +167,12 @@ class Bill_EditScreen extends Screen
     // // hanya terpakai pada Purchase::STATUS_APPROVED dan Purchase::STATUS_UNPAID
     // public function approvedRevoke(Purchase $purchase)
     // {
-    //     $purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+    //     $items = PurchaseDetail::where('purchase_id', $purchase->id)->get();
 
-    //     foreach ($purchaseDetails as $purchaseDetail) {
+    //     foreach ($items as $item) {
     //         // Product::where('id', $product->product_id)
     //         //         ->update(['quantity' => DB::raw('quantity+'.$product->quantity)]);
-    //         $this->updateStock($purchaseDetail->product_id, $purchaseDetail->quantity, 'sub');
+    //         updateStock($item->product_id, $item->quantity, 'sub');
     //     }
 
     //     Purchase::findOrFail($purchase->id)
@@ -248,21 +185,4 @@ class Bill_EditScreen extends Screen
     //         ->back()
     //         ->with('success', 'Purchase approval has been revoked!');
     // }
-
-    public function updateStock($productID, $purchaseQty, $type)
-    {
-        $product = Product::findOrFail($productID);
-        $updateQty = 0;
-
-        if ($type == 'add') {
-            $updateQty = $product->quantity + $purchaseQty;
-        } else if ($type == 'sub') {
-            $updateQty = $product->quantity - $purchaseQty;
-        }
-
-        // Update stock quantity in the product
-        $product->update([
-            'quantity' => $updateQty
-        ]);
-    }
 }

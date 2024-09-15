@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Purchase;
 
+use App\Models\User;
 use App\Orchid\Presenters\PurchasePaymentPresenter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

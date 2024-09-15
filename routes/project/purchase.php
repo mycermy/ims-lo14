@@ -1,14 +1,14 @@
 <?php
 
 use App\Orchid\Screens\Contact\DeletedContact_ListScreen;
-use App\Orchid\Screens\Purchase\Bill_EditScreen;
-use App\Orchid\Screens\Purchase\Bill_ListScreen;
-use App\Orchid\Screens\Purchase\Bill_ViewScreen;
-use App\Orchid\Screens\Purchase\BillPayment_EditScreen;
-use App\Orchid\Screens\Purchase\BillPayment_ListScreen;
-use App\Orchid\Screens\Purchase\BillReturn_EditScreen;
-use App\Orchid\Screens\Purchase\BillReturn_ListScreen;
-use App\Orchid\Screens\Purchase\BillReturnSingle_CreateScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_EditScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_ListScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_ViewScreen;
+use App\Orchid\Screens\Purchase\BillPayment\BillPayment_EditScreen;
+use App\Orchid\Screens\Purchase\BillPayment\BillPayment_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturn_EditScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturn_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturnSingle_CreateScreen;
 use App\Orchid\Screens\Purchase\PurchasePayments_ListScreen;
 use App\Orchid\Screens\Purchase\PurchaseReturns_ListScreen;
 use Illuminate\Support\Facades\Route;

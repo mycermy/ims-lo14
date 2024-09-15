@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Purchase\BillPayment;
 
-use App\Models\Purchase;
-use App\Models\PurchasePayment;
+use App\Models\Purchase\Purchase;
+use App\Models\Purchase\PurchasePayment;
 use App\Rules\AmountNotExceedDue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

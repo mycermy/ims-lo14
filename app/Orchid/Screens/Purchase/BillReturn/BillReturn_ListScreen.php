@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Orchid\Screens\Purchase;
+namespace App\Orchid\Screens\Purchase\BillReturn;
 
-use App\Models\Purchase;
-use App\Models\PurchasePayment;
-use App\Models\PurchaseReturn;
-use App\Models\PurchaseReturnItem;
+use App\Models\Purchase\Purchase;
+use App\Models\Purchase\PurchasePayment;
+use App\Models\Purchase\PurchaseReturnItem;
+use App\Orchid\Screens\Purchase\TabMenuPurchase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
-use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
