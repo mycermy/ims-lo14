@@ -64,20 +64,25 @@ if (!function_exists('make_reference_id')) {
 // }
 
 if (!function_exists('updateStock')) {
-    function updateStock($productID, $purchaseQty, $type)
-        {
-            $product = Product::findOrFail($productID);
-            $updateQty = 0;
-    
-            if ($type == 'add') {
-                $updateQty = $product->quantity + $purchaseQty;
-            } else if ($type == 'sub') {
-                $updateQty = $product->quantity - $purchaseQty;
-            }
-    
-            // Update stock quantity in the product
-            $product->update([
-                'quantity' => $updateQty
-            ]);
-        }
+    function updateStock(int $productId, int $quantity, string $type): void
+    {
+        $product = Product::findOrFail($productId);
+        
+        $updateQuantity = calculateNewQuantity($product->quantity, $quantity, $type);
+
+        // Update stock quantity in the product
+        $product->update(['quantity' => $updateQuantity]);
+    }
+
+    function calculateNewQuantity(int $currentQuantity, int $changeQuantity, string $type): int
+    {
+        $incrementTypes = ['add', 'purchase', 'salesReturn'];
+        $decrementTypes = ['sub', 'purchaseReturn', 'sales'];
+
+        return match (true) {
+            in_array($type, $incrementTypes) => $currentQuantity + $changeQuantity,
+            in_array($type, $decrementTypes) => $currentQuantity - $changeQuantity,
+            default => throw new InvalidArgumentException("Invalid stock update type: {$type}"),
+        };
+    }
 }
