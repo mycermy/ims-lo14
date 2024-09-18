@@ -344,3 +344,8 @@ END
 WHERE `code` IN ('KC-LM', 'LMAMS-2XL', 'LMAMS-L', 'LMAMS-M', 'LMAMS-S', 'LMAMS-XL', 'LMAMS-XS', 'LMFGSC', 'LMTOWEL', 'LMFGTL', 'LMFGT', 'LMFGTS', 'LMFGTXL', 'LMFGT2XL', 'LMFGT3XL', 'LMFGTXS', 'LM-TB', 'LM-U', 'LM-TF', 'LM-WS', 'MUG', '21145', '6934', '3391', 'ATFLM', '9525', 'LM-BF', 'LMBSSK-100', '8931', '1808', 'EF-LM', '1803', '8538', 'LM5W30(1L)', 'LM5W30', '8576', 'LM5W40', '8536', '2770', '8998', '21592', '21593', '1802', 'LM-MSP', '2591', 'LM-RC', 'LM10W30', 'LM10W40', '2184', 'LM3310', '9705-1L', '9705', '7615', '7616', '1806', '9504');
 
 
+##
+composer require orchid/platform:14.31.2
+
+## update to orchid 14.35.1
+composer update orchid/platform --with-dependencies
