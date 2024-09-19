@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Contact;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
+use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Orchid\Filters\Types\Like;
 use Orchid\Filters\Types\Where;
+use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Types\WhereDateStartEnd;
-use Orchid\Screen\AsSource;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Contact extends Model
 {

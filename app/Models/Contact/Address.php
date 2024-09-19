@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Contact;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use Orchid\Screen\AsSource;
+use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Orchid\Filters\Filterable;
-use Orchid\Screen\AsSource;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Address extends Model
 {

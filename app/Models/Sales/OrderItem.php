@@ -2,7 +2,7 @@
 
 namespace App\Models\Sales;
 
-use App\Models\Product;
+use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;

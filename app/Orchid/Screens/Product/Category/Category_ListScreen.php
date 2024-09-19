@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Orchid\Screens\Product;
+namespace App\Orchid\Screens\Product\Category;
 
-use App\Models\Category;
+use App\Models\Product\Category;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;

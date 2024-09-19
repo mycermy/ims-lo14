@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Orchid\Screens\Product;
+namespace App\Orchid\Screens\Product\StockAdjustment;
 
-use App\Models\AdjustedProduct;
-use App\Models\Product;
-use App\Models\StockAdjustment;
+use App\Models\Product\Product;
+use App\Models\Product\StockAdjustment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\DateTimer;
@@ -18,7 +16,6 @@ use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 

@@ -1,18 +1,20 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Product;
 
-use App\Models\Purchase\PurchaseDetail;
-use App\Models\Purchase\PurchaseReturnItem;
+use App\Models\User;
 use App\Models\Sales\Order;
-use App\Models\Sales\OrderItem;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Orchid\Filters\Types\Like;
+use App\Models\Sales\OrderItem;
 use Orchid\Filters\Types\Where;
-use Orchid\Screen\AsSource;
+use App\Models\Purchase\PurchaseDetail;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Purchase\PurchaseReturnItem;
+use App\Models\Sales\OrderReturnItem;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
@@ -109,6 +111,14 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function orderReturnItems()
+    {
+        return $this->hasMany(OrderReturnItem::class);
     }
 
     /**

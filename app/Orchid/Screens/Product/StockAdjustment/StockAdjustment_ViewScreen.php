@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Orchid\Screens\Product;
+namespace App\Orchid\Screens\Product\StockAdjustment;
 
-use App\Models\StockAdjustment;
-use Orchid\Screen\Actions\Button;
+use App\Models\Product\StockAdjustment;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;

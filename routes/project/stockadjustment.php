@@ -1,8 +1,8 @@
 <?php
 
-use App\Orchid\Screens\Product\StockAdjustment_EditScreen;
-use App\Orchid\Screens\Product\StockAdjustment_ListScreen;
-use App\Orchid\Screens\Product\StockAdjustment_ViewScreen;
+use App\Orchid\Screens\Product\StockAdjustment\StockAdjustment_EditScreen;
+use App\Orchid\Screens\Product\StockAdjustment\StockAdjustment_ListScreen;
+use App\Orchid\Screens\Product\StockAdjustment\StockAdjustment_ViewScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 

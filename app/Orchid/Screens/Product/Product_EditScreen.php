@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Product;
 
-use App\Models\Category;
-use App\Models\Product;
+use App\Models\Product\Category;
+use App\Models\Product\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\Button;
@@ -13,7 +13,6 @@ use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Switcher;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
-use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 

@@ -77,9 +77,9 @@ class Order_ListScreen extends Screen
                             ->route('platform.orders.view', $target)
                     ),
                 TD::make('customer_name', 'Customer'),
-                TD::make('total_amount')->alignRight(),
-                TD::make('paid_amount')->alignRight(),
-                TD::make('due_amount')->alignRight(),
+                TD::make('total_amount', 'Total Amount')->alignRight(),
+                TD::make('paid_amount', 'Paid Amount')->alignRight(),
+                TD::make('due_amount', 'Due Amount')->alignRight(),
                 TD::make('payment_status', 'Payment Status')->alignCenter()
                     ->render(function ($target) {
                         if ($target->payment_status == OrderPayment::STATUS_PAID) {

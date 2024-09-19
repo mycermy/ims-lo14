@@ -66,7 +66,7 @@ class PlatformProvider extends OrchidServiceProvider
                 ->icon('bs.card-list')
                 ->list([
                     Menu::make('Orders')->route('platform.orders'),
-                    // Menu::make('Order Payments')->route('platform.orderpayments'),
+                    Menu::make('Order Payments')->route('platform.orderpayments'),
                     // Menu::make('Order Returns')->route('platform.orderreturns'),
                 ])
                 ->permission('platform.purchases.index')

@@ -5,6 +5,7 @@ use App\Orchid\Screens\Sales\Order\Order_ListScreen;
 use App\Orchid\Screens\Sales\Order\Order_ViewScreen;
 use App\Orchid\Screens\Sales\OrderPayment\OrderPayment_EditScreen;
 use App\Orchid\Screens\Sales\OrderPayment\OrderPayment_ListScreen;
+use App\Orchid\Screens\Sales\OrderPayments_ListScreen;
 use App\Orchid\Screens\Sales\OrderReturn\OrderReturn_ListScreen;
 use App\Orchid\Screens\Sales\OrderReturn\OrderReturnSingle_CreateScreen;
 use Illuminate\Support\Facades\Route;
@@ -69,7 +70,14 @@ Route::screen('orders/{order?}/{orderDetail?}/create-return', OrderReturnSingle_
         ->parent('platform.orders.view', $order)
         ->push(__('Create Return'), route('platform.orders.returnbyorderitem.create')));
 
-// 
+// Platfrom > Order Payments
+Route::screen('order-payments', OrderPayments_ListScreen::class)
+    ->name('platform.orderpayments')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.orders')
+        ->push(__('Order Payment'), route('platform.orderpayments')));
+
+
 // Platfrom > Orders > Payments
 Route::screen('orders/{order?}/payments', OrderPayment_ListScreen::class)
     ->name('platform.orders.payments')

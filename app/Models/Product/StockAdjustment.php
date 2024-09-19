@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Product;
 
 use Carbon\Carbon;
+use App\Models\User;
+use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Orchid\Screen\AsSource;
 
 class StockAdjustment extends Model
 {

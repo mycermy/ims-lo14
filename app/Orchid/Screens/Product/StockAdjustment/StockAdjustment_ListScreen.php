@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Orchid\Screens\Product;
+namespace App\Orchid\Screens\Product\StockAdjustment;
 
-use App\Models\Product;
-use App\Models\StockAdjustment;
+use App\Models\Product\Product;
+use App\Models\Product\StockAdjustment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Button;

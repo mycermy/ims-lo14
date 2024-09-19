@@ -86,7 +86,7 @@ class PurchaseReturns_ListScreen extends Screen
                     //     Link::make($target->reference)
                     //         ->route('platform.purchases.returns', $target->purchase)
                     // ),
-                TD::make('total_amount')->alignRight()->width(50),
+                TD::make('total_amount', 'Total Amount')->alignRight()->width(50),
                 // TD::make('reason'),
                 TD::make('updated_by', 'Updated By')->alignRight()->width(150)
                     ->render(fn($target) => $target->updatedBy->name ?? null),

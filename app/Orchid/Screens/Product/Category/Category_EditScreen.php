@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Orchid\Screens\Product;
+namespace App\Orchid\Screens\Product\Category;
 
-use App\Models\Category;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Product\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\Button;

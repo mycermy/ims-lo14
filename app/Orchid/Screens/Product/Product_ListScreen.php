@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Product;
 
-use App\Models\Category;
-use App\Models\Product;
+use App\Models\Product\Category;
+use App\Models\Product\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
