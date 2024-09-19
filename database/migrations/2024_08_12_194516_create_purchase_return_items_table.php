@@ -16,6 +16,9 @@ return new class extends Migration
     {
         Schema::create('purchase_return_items', function (Blueprint $table) {
             $table->id();
+            $table->integer('quantity');
+            $table->decimal('sub_total', 20);
+            $table->timestamps();
 
             $table->foreignIdFor(PurchaseReturn::class)
                   ->constrained()
@@ -32,9 +35,6 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->cascadeOnDelete();
 
-            $table->integer('quantity');
-            $table->decimal('sub_total', 20, 2);
-            $table->timestamps();
         });
     }
 

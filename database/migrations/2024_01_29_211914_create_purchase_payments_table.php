@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('purchase_payments', function (Blueprint $table) {
             $table->id();
-            $table->decimal('amount', 20);
             $table->date('date');
             $table->string('reference');
+            $table->decimal('amount', 20);
             $table->string('payment_method');
             $table->text('note')->nullable();
             $table->timestamps();

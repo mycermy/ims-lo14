@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Contact;
 
-use App\Models\Address;
-use App\Models\Contact;
+use App\Models\Contact\Address;
+use App\Models\Contact\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\Button;
@@ -15,8 +15,6 @@ use Orchid\Screen\Screen;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
-
-use function PHPUnit\Framework\isNull;
 
 class Contact_EditScreen extends Screen
 {

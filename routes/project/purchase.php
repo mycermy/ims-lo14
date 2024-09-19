@@ -1,14 +1,14 @@
 <?php
 
 use App\Orchid\Screens\Contact\DeletedContact_ListScreen;
-use App\Orchid\Screens\Purchase\Bill_EditScreen;
-use App\Orchid\Screens\Purchase\Bill_ListScreen;
-use App\Orchid\Screens\Purchase\Bill_ViewScreen;
-use App\Orchid\Screens\Purchase\BillPayment_EditScreen;
-use App\Orchid\Screens\Purchase\BillPayment_ListScreen;
-use App\Orchid\Screens\Purchase\BillReturn_EditScreen;
-use App\Orchid\Screens\Purchase\BillReturn_ListScreen;
-use App\Orchid\Screens\Purchase\BillReturnSingle_CreateScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_EditScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_ListScreen;
+use App\Orchid\Screens\Purchase\Bill\Bill_ViewScreen;
+use App\Orchid\Screens\Purchase\BillPayment\BillPayment_EditScreen;
+use App\Orchid\Screens\Purchase\BillPayment\BillPayment_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturn_EditScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturn_ListScreen;
+use App\Orchid\Screens\Purchase\BillReturn\BillReturnSingle_CreateScreen;
 use App\Orchid\Screens\Purchase\PurchasePayments_ListScreen;
 use App\Orchid\Screens\Purchase\PurchaseReturns_ListScreen;
 use Illuminate\Support\Facades\Route;
@@ -76,10 +76,10 @@ Route::screen('purchases/{purchase?}/create-return', BillReturn_EditScreen::clas
 
 // Platfrom > Purchases > Return Single > Create
 Route::screen('purchases/{purchase?}/{purchaseDetail?}/create-return', BillReturnSingle_CreateScreen::class)
-    ->name('platform.purchases.returnbypurchasedatails.create')
+    ->name('platform.purchases.returnbypurchasedetails.create')
     ->breadcrumbs(fn (Trail $trail, $purchase, $purchaseDetail) => $trail
         ->parent('platform.purchases.view', $purchase)
-        ->push(__('Create Return'), route('platform.purchases.returnbypurchasedatails.create')));
+        ->push(__('Create Return'), route('platform.purchases.returnbypurchasedetails.create')));
 
 // Platfrom > Purchases > Deleted
 Route::screen('deleted/purchases', DeletedContact_ListScreen::class)

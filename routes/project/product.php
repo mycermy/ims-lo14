@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\Product;
-use App\Orchid\Screens\Product\Category_EditScreen;
-use App\Orchid\Screens\Product\Category_ListScreen;
+use App\Orchid\Screens\Product\Category\Category_EditScreen;
+use App\Orchid\Screens\Product\Category\Category_ListScreen;
 use App\Orchid\Screens\Product\DeletedProduct_ListScreen;
 use App\Orchid\Screens\Product\Product_EditScreen;
 use App\Orchid\Screens\Product\Product_ListScreen;

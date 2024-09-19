@@ -22,7 +22,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('reference');
-            $table->decimal('total_amount', 10, 2);
+            $table->decimal('total_amount', 20);
             $table->text('reason')->nullable();
             $table->timestamps();
 

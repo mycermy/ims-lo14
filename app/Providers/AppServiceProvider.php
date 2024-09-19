@@ -11,7 +11,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Set Public folder name 
+        app()->usePublicPath(base_path() . env('PUBLIC_FOLDER', '/public'));
     }
 
     /**

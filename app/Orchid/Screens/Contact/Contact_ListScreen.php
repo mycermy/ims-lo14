@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Contact;
 
-use App\Models\Address;
-use App\Models\Contact;
+use App\Models\Contact\Address;
+use App\Models\Contact\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -13,8 +13,6 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Relation;
-use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;

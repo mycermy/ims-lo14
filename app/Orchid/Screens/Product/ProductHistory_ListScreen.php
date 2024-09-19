@@ -2,10 +2,9 @@
 
 namespace App\Orchid\Screens\Product;
 
-use DateTimeZone;
 use Carbon\Carbon;
 use Orchid\Screen\TD;
-use App\Models\Product;
+use App\Models\Product\Product;
 use Orchid\Screen\Sight;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Actions\Link;
@@ -24,9 +23,12 @@ class ProductHistory_ListScreen extends Screen
     {
         return [
             'product' => $product,
+            'stock_adj' => $product->adjustedProducts()->defaultSort('created_at', 'desc')->limit(10)->get(),
             'purchase_hist' => $product->purchaseDetails()->defaultSort('created_at', 'desc')->limit(10)->get(),
             'purchase_return_hist' => $product->purchaseReturnItems()->defaultSort('created_at', 'desc')->limit(10)->get(),
-            'stock_adj' => $product->adjustedProducts()->defaultSort('created_at', 'desc')->limit(10)->get(),
+            'order_h' => $product->orders()->defaultSort('created_at', 'desc')->limit(10)->get(),
+            // 'order_hist' => $product->orderItems()->defaultSort('created_at', 'desc')->limit(10)->get(),
+            'order_return_hist' => $product->orderReturnItems()->defaultSort('created_at', 'desc')->limit(10)->get(),
         ];
     }
 
@@ -93,7 +95,7 @@ class ProductHistory_ListScreen extends Screen
 
             Layout::table('stock_adj', [
                 TD::make('date')->width(150)
-                    ->render(fn($target) => $this->dateTimeSplit($target->adjustment->date)),
+                    ->render(fn($target) => $this->dateTimeSplit($target->adjustment->created_at)),
                 TD::make('stock_adjustment_id', 'Reference')
                     ->render(
                         fn($target) =>
@@ -106,7 +108,7 @@ class ProductHistory_ListScreen extends Screen
 
             Layout::table('purchase_hist', [
                 TD::make('date')->width(150)
-                    ->render(fn($target) => $this->dateTimeSplit($target->purchase->date)),
+                    ->render(fn($target) => $this->dateTimeSplit($target->purchase->created_at)),
                 TD::make('purchase_id', 'Reference')
                     // ->render(fn($target) => $target->purchase->reference),
                     ->render(
@@ -138,6 +140,53 @@ class ProductHistory_ListScreen extends Screen
                     ->render(fn($target) => $target->purchaseDetail->unit_price),
                 TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
             ])->title('Purchase Return History'),
+
+            Layout::table('order_h', [
+                TD::make('date')->width(150) //->usingComponent(dateTimeSplit::class),
+                    ->render(fn($target) => $this->dateTimeSplit($target->created_at)),
+                TD::make('reference', 'Reference')
+                    // ->render(fn($target) => $target->purchase->reference),
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->reference)
+                            ->route('platform.orders.view', $target)
+                    ),
+                TD::make('pivot_quantity')->alignCenter()->width(50)
+                    ->render(fn($target) => $target->pivot->quantity),
+                TD::make('pivot_unit_price', 'Unit Price')->alignRight()->width(100)
+                    ->render(fn($target) => $target->pivot->unit_price),
+                TD::make('pivot_sub_total', 'Sub Total')->alignRight()->width(150)
+                    ->render(fn($target) => $target->pivot->sub_total),
+            ])->title('Order History'),
+
+            // Layout::table('order_hist', [
+            //     TD::make('date')->width(150)
+            //         ->render(fn($target) => $this->dateTimeSplit($target->order->created_at)),
+            //     TD::make('order_id', 'Reference')
+            //         ->render(
+            //             fn($target) =>
+            //             Link::make($target->order->reference)
+            //                 ->route('platform.orders.view', $target->order)
+            //         ),
+            //     TD::make('quantity')->alignCenter()->width(50),
+            //     TD::make('unit_price', 'Unit Price')->alignRight()->width(100),
+            //     TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
+            // ])->title('Order History'),
+
+            Layout::table('order_return_hist', [
+                TD::make('date')->width(150)
+                    ->render(fn($target) => $this->dateTimeSplit($target->orderReturn->created_at)),
+                TD::make('order_id', 'Reference')
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->orderReturn->reference)
+                            ->route('platform.orders.returns', $target->orderReturn->order)
+                    ),
+                TD::make('quantity')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100)
+                    ->render(fn($target) => $target->orderItem->unit_price),
+                TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
+            ])->title('Order Return History'),
             // 
         ];
     }
