@@ -2,7 +2,7 @@
 
 namespace App\Orchid\Screens\Contact;
 
-use App\Models\Address;
+use App\Models\Contact\Address;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;

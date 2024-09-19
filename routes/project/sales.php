@@ -8,6 +8,7 @@ use App\Orchid\Screens\Sales\OrderPayment\OrderPayment_ListScreen;
 use App\Orchid\Screens\Sales\OrderPayments_ListScreen;
 use App\Orchid\Screens\Sales\OrderReturn\OrderReturn_ListScreen;
 use App\Orchid\Screens\Sales\OrderReturn\OrderReturnSingle_CreateScreen;
+use App\Orchid\Screens\Sales\OrderReturns_ListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -42,7 +43,7 @@ Route::screen('orders/{order}/view', Order_ViewScreen::class)
 
 // 
 // Platfrom > Order Returns
-Route::screen('order-returns', Order_ListScreen::class)
+Route::screen('order-returns', OrderReturns_ListScreen::class)
     ->name('platform.orderreturns')
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.orders')

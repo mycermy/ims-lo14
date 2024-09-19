@@ -2,14 +2,15 @@
 
 namespace App\Orchid\Screens\Sales;
 
-use App\Models\Sales\OrderPayment;
+use App\Models\Sales\OrderReturn;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Components\Cells\DateTimeSplit;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
-class OrderPayments_ListScreen extends Screen
+class OrderReturns_ListScreen extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
@@ -19,7 +20,7 @@ class OrderPayments_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => OrderPayment::filters()->orderByDesc('created_at')->paginate(),
+            'model' => OrderReturn::filters()->orderByDesc('created_at')->paginate(),
         ];
     }
 
@@ -30,7 +31,7 @@ class OrderPayments_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Order Payments Listing ';
+        return 'Order Returns Listing ';
     }
 
     /**
@@ -71,18 +72,17 @@ class OrderPayments_ListScreen extends Screen
         return [
             Layout::table('model', [
                 // TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('date')->width(130),
+                TD::make('created_at','Date')->width(150)->asComponent(DateTimeSplit::class),
                 TD::make('order')->width(150)
                     ->render(
                         fn($target) =>
                         Link::make($target->order->reference)
-                            ->route('platform.purchases.view', $target->order)
+                            ->route('platform.orders.view', $target->order)
                     ),
-                TD::make('reference')//->width(150)
-                    ->render(fn($target) => new Persona($target->presenter())),
-                TD::make('payment_method', 'Payment Method')->alignCenter()->width(150),
-                TD::make('amount')->alignRight()->width(50),
-                // TD::make('note'),
+                TD::make('reference', 'Return Reference')//->width(150)
+                    ->render(fn ($target) => new Persona($target->presenter())),
+                TD::make('total_amount', 'Total Amount')->alignRight()->width(50),
+                // TD::make('reason'),
                 TD::make('updated_by', 'Updated By')->alignRight()->width(150)
                     ->render(fn($target) => $target->updatedBy->name ?? null),
             ]),

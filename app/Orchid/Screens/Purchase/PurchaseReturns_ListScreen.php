@@ -71,9 +71,9 @@ class PurchaseReturns_ListScreen extends Screen
     {
         return [
             Layout::table('model', [
-                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                // TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('created_at','Date')->width(150)->asComponent(DateTimeSplit::class),
-                TD::make('bill')->width(150)
+                TD::make('bill reference')->width(150)
                     ->render(
                         fn($target) =>
                         Link::make($target->purchase->reference)

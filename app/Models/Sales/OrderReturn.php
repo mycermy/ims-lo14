@@ -3,6 +3,7 @@
 namespace App\Models\Sales;
 
 use App\Models\User;
+use App\Orchid\Presenters\OrderReturnPresenter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,5 +43,9 @@ class OrderReturn extends Model
     public function getDateAttribute($value)
     {
         return Carbon::parse($value)->format('d M Y');
+    }
+
+    public function presenter() {
+        return new OrderReturnPresenter($this);
     }
 }
