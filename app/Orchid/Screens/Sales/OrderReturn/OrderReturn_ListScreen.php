@@ -96,7 +96,7 @@ class OrderReturn_ListScreen extends Screen
             new TabMenuOrder($this->order),
 
             Layout::table('returnItems', [
-                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('reference')->width(175)
                     ->render(
                         fn($target) => $target->orderReturn->reference

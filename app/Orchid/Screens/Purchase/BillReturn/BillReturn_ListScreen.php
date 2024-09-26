@@ -96,7 +96,7 @@ class BillReturn_ListScreen extends Screen
             new TabMenuPurchase($this->purchase),
 
             Layout::table('returnItems', [
-                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('reference')->width(150)
                     ->render(
                         fn($target) => $target->purchaseReturn->reference

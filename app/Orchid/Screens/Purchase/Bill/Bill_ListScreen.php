@@ -2,7 +2,6 @@
 
 namespace App\Orchid\Screens\Purchase\Bill;
 
-use App\Models\Product;
 use Orchid\Screen\TD;
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchasePayment;

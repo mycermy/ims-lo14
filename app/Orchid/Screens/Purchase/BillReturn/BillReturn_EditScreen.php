@@ -2,7 +2,7 @@
 
 namespace App\Orchid\Screens\Purchase\BillReturn;
 
-use App\Models\Product;
+use App\Models\Product\Product;
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchaseDetail;
 use App\Models\Purchase\PurchaseReturn;

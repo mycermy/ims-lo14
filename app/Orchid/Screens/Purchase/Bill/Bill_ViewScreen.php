@@ -2,7 +2,6 @@
 
 namespace App\Orchid\Screens\Purchase\Bill;
 
-use App\Models\Product;
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchaseDetail;
 use App\Models\Purchase\PurchasePayment;
@@ -125,7 +124,7 @@ class Bill_ViewScreen extends Screen
             ]),
 
             Layout::table('purchaseDetails', [
-                TD::make('id', '#')->width(10)->render(fn($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('product_id', 'Code')
                     // ->render(fn ($target) => $target->product->code ?? null),
                     ->render(

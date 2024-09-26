@@ -58,10 +58,10 @@ class DeletedProduct_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::table('model',[
-                TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+            Layout::table('model', [
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('category_id', 'Category')
-                    ->filter(Relation::make()->fromModel(Category::class,'name'))
+                    ->filter(Relation::make()->fromModel(Category::class, 'name'))
                     ->render(fn($target) => $target->category->name ?? null),
                 TD::make('code')->filter()->sort(),
                 TD::make('part_number', 'Part Number')->filter()->sort(),
@@ -71,15 +71,15 @@ class DeletedProduct_ListScreen extends Screen
                 // TD::make('created_by')->render(fn($target) => $target->createdBy->name),
                 // TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
-                ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor','platform.items.editor']))
-                ->width('10px')
-                ->render(
-                    fn ($target) =>
-                    $this->getTableActions($target)
-                        ->alignCenter()
-                        ->autoWidth()
-                        ->render()
-                ),
+                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
 
             ]),
         ];

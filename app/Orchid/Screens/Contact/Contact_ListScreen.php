@@ -85,7 +85,7 @@ class Contact_ListScreen extends Screen
     {
         return [
             Layout::table('model',[
-                TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('type')->filter()->sort(),
                 TD::make('name'),
                 TD::make('email'),

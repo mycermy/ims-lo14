@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Layouts;
 
-use App\Models\Contact;
-use App\Models\Product;
+use App\Models\Contact\Contact;
+use App\Models\Product\Product;
 use App\Models\Sales\Order;
 use Illuminate\Http\Request;
 use Orchid\Screen\Fields\DateTimer;

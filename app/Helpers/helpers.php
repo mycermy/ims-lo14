@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Product\Product;
+use Orchid\Support\Facades\Toast;
+
+
 // if (!function_exists('settings')) {
 //     function settings() {
 //         $settings = cache()->remember('settings', 24*60, function () {
@@ -31,9 +35,6 @@
 //         return $formatted_value;
 //     }
 // }
-
-use App\Models\Product;
-use Orchid\Support\Facades\Toast;
 
 if (!function_exists('make_reference_id')) {
     function make_reference_id($prefix, $number) {
@@ -92,5 +93,18 @@ if (!function_exists('updateStock')) {
             // default => throw new InvalidArgumentException("Invalid stock update type: {$type}"),
             default => false,
         };
+    }
+}
+
+if (!function_exists('getPage')) {
+    /**
+     * Get the current page number for pagination, ensuring it's at least 1.
+     *
+     * @param int $default The default page number if not specified
+     * @return int
+     */
+    function getPage(int $default = 1): int
+    {
+        return max(1, (int)request('page', $default));
     }
 }

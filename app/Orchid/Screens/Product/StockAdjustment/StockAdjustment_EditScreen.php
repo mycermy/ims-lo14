@@ -118,7 +118,7 @@ class StockAdjustment_EditScreen extends Screen
                         ->fields([
                             'id' => Input::make('id')->readonly()->type('hidden'),
                             'product_id' => Relation::make('product_id')->fromModel(Product::class,'name')->readonly()->searchColumns('name','code','part_number')->chunk(10)->required(),
-                            'quantity' => Input::make('quantity')->type('number')->required(),
+                            'quantity' => Input::make('quantity')->type('number')->min(0)->required(),
                             'type' => Select::make('type')->required()->options([
                                 StockAdjustment::TYPE_ADD => StockAdjustment::TYPE_ADD,
                                 StockAdjustment::TYPE_SUB => StockAdjustment::TYPE_SUB,
@@ -144,30 +144,12 @@ class StockAdjustment_EditScreen extends Screen
     {
         $stockAdjustment->fill($request->get('stockAdjustment'));
         $stockAdjustment->fill([
-            'date' => Carbon::parse( $request->input('purchase.date'))->toDate(),
+            'date' => Carbon::parse($request->input('purchase.date'))->toDate(),
             'updated_by' => auth()->id(),
         ]);
         $stockAdjustment->save();
         
-        $adjustedProducts = $request->get('adjustedProduct');
-        foreach ($adjustedProducts as $adjustedProduct) {
-            $stockAdjustment->adjustedProducts()->create($adjustedProduct);
-            // amend stock qty in product
-            $product = Product::findOrFail($adjustedProduct['product_id']);
-
-            if ($adjustedProduct['type'] == 'add') {
-                # code...add
-                $product->update([
-                    'quantity' => $product->quantity + $adjustedProduct['quantity']
-                ]);
-            } elseif ($adjustedProduct['type'] == 'sub') {
-                # code...sub
-                $product->update([
-                    'quantity' => $product->quantity - $adjustedProduct['quantity']
-                ]);
-            }
-            
-        }
+        $this->processAdjustedProducts($request->get('adjustedProduct'), $stockAdjustment);
 
         Toast::info(__('Stock adjustment was saved.'));
 
@@ -183,55 +165,52 @@ class StockAdjustment_EditScreen extends Screen
         $stockAdjustment->fill(['updated_by' => auth()->id()]);
         $stockAdjustment->save();
 
-        $adjustedProducts = $request->get('adjustedProduct');
-        foreach ($adjustedProducts as $adjustedProduct) {
-            if (isset($adjustedProduct['id'])) {
-                # code...
-                $existingAdjustedProduct = $stockAdjustment->adjustedProducts()->find($adjustedProduct['id']);
-                if ($existingAdjustedProduct) {
-                    // get current stock
-                    $product = Product::findOrFail($adjustedProduct['product_id']);
-                    // rollback stock qty in product table
-                    if ($existingAdjustedProduct['type'] == 'add') {
-                        # code...
-                        $product->update([
-                            'quantity' => $product->quantity - $existingAdjustedProduct['quantity']
-                        ]);
-                    } elseif ($existingAdjustedProduct['type'] == 'sub') {
-                        # code...
-                        $product->update([
-                            'quantity' => $product->quantity + $existingAdjustedProduct['quantity']
-                        ]);
-                    }
-                    
-                    // kemudian baru amend dengan adjust qty yang baru.
-                    if ($adjustedProduct['type'] == 'add') {
-                        # code...
-                        $product->update([
-                            'quantity' => $product->quantity + $adjustedProduct['quantity']
-                        ]);
-                    } elseif ($adjustedProduct['type'] == 'sub') {
-                        # code...
-                        $product->update([
-                            'quantity' => $product->quantity - $adjustedProduct['quantity']
-                        ]);
-                    }
-
-                    // update adjustedProduct table
-                    $existingAdjustedProduct->update($adjustedProduct);
-                    // $existingAdjustedProduct->save();
-                }
-            } else {
-                # code...
-                // cannot simply add on new item bila existing. yes, still there. tapi kita disable
-                //$stockAdjustment->adjustedProducts()->create($adjustedProduct);
-            }
-            
-        }
+        $this->processAdjustedProducts($request->get('adjustedProduct'), $stockAdjustment, true);
 
         Toast::info(__('Stock adjustment was updated.'));
         return redirect()->route('platform.products.stockadjustments');
     }
 
-    
+    private function processAdjustedProducts(array $adjustedProducts, StockAdjustment $stockAdjustment, bool $isUpdate = false)
+    {
+        foreach ($adjustedProducts as $adjustedProduct) {
+            if ($isUpdate && isset($adjustedProduct['id'])) {
+                $this->updateExistingAdjustedProduct($adjustedProduct, $stockAdjustment);
+            } else {
+                $this->createNewAdjustedProduct($adjustedProduct, $stockAdjustment);
+            }
+        }
+    }
+
+    private function updateExistingAdjustedProduct(array $adjustedProduct, StockAdjustment $stockAdjustment)
+    {
+        $existingAdjustedProduct = $stockAdjustment->adjustedProducts()->find($adjustedProduct['id']);
+        if ($existingAdjustedProduct) {
+            // Rollback previous adjustment
+            updateStock(
+                $adjustedProduct['product_id'], 
+                $existingAdjustedProduct['quantity'], 
+                $existingAdjustedProduct['type'] === 'add' ? 'sub' : 'add'
+            );
+            
+            // Apply new adjustment
+            updateStock(
+                $adjustedProduct['product_id'], 
+                $adjustedProduct['quantity'], 
+                $adjustedProduct['type']
+            );
+
+            $existingAdjustedProduct->update($adjustedProduct);
+        }
+    }
+
+    private function createNewAdjustedProduct(array $adjustedProduct, StockAdjustment $stockAdjustment)
+    {
+        $stockAdjustment->adjustedProducts()->create($adjustedProduct);
+        updateStock(
+            $adjustedProduct['product_id'], 
+            $adjustedProduct['quantity'], 
+            $adjustedProduct['type']
+        );
+    }
 }

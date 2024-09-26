@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Layouts;
 
-use App\Models\Contact;
-use App\Models\Product;
+use App\Models\Contact\Contact;
+use App\Models\Product\Product;
 use App\Models\Purchase\Purchase;
 use Illuminate\Http\Request;
 use Orchid\Screen\Fields\DateTimer;
@@ -133,6 +133,7 @@ class BillListener extends Listener
             ->set('purchaseTotal', number_format($totalAmount, 2))
             ->set('purchase.supplier_id', $request->input('purchase.supplier_id'))
             ->set('purchase.status', $request->input('purchase.status'))
+            ->set('purchase.note', $request->input('purchase.note'))
         ;
     }
 }

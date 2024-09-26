@@ -4,7 +4,6 @@ namespace App\Orchid\Screens\Sales\Order;
 
 use App\Models\Sales\Order;
 use App\Models\Sales\OrderPayment;
-use Illuminate\Support\Facades\Auth;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;

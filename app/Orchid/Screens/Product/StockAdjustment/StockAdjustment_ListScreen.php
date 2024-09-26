@@ -66,27 +66,27 @@ class StockAdjustment_ListScreen extends Screen
     {
         return [
             Layout::table('model', [
-                TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('date'),
                 TD::make('reference')
-                ->render(
-                    fn($target) =>
-                    Link::make($target->reference)
-                        ->route('platform.products.stockadjustments.view', $target)
-                ),
+                    ->render(
+                        fn($target) =>
+                        Link::make($target->reference)
+                            ->route('platform.products.stockadjustments.view', $target)
+                    ),
                 TD::make('note')->width('auto'),
                 TD::make('adjusted_products_count', 'ProdCount')->alignCenter(),
                 TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
-                ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor','platform.items.editor']))
-                ->width('10px')
-                ->render(
-                    fn ($target) =>
-                    $this->getTableActions($target)
-                        ->alignCenter()
-                        ->autoWidth()
-                        ->render()
-                ),
+                    ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
             ]),
         ];
     }
@@ -119,8 +119,8 @@ class StockAdjustment_ListScreen extends Screen
                         ->method('remove', [
                             'id' => $target->id,
                         ])
-                        // ->canSee(!$target->trashed())
-                        ,
+                    // ->canSee(!$target->trashed())
+                    ,
                 ]),
         ]);
     }
@@ -132,31 +132,20 @@ class StockAdjustment_ListScreen extends Screen
     {
         $stockAdjustment = StockAdjustment::findOrFail($request->get('id'));
 
-        // child
-        foreach ($stockAdjustment->adjustedProducts as $existingAdjustedProduct) {
-            // get current stock
-            $product = Product::findOrFail($existingAdjustedProduct['product_id']);
-            // rollback stock qty in product table
-            if ($existingAdjustedProduct['type'] == 'add') {
-                # code...
-                $product->update([
-                    'quantity' => $product->quantity - $existingAdjustedProduct['quantity']
-                ]);
-            } elseif ($existingAdjustedProduct['type'] == 'sub') {
-                # code...
-                $product->update([
-                    'quantity' => $product->quantity + $existingAdjustedProduct['quantity']
-                ]);
-            }
+        $this->rollbackStockAdjustments($stockAdjustment);
 
-            // $existingAdjustedProduct->delete();
-            
-        }
-
-        // parent
         $stockAdjustment->delete();
 
         Toast::info(__('Stock adjustment was deleted.'));
     }
+
+    private function rollbackStockAdjustments(StockAdjustment $stockAdjustment)
+    {
+        foreach ($stockAdjustment->adjustedProducts as $adjustedProduct) {
+            $type = $adjustedProduct->type === 'add' ? 'sub' : 'add';
+            updateStock($adjustedProduct->product_id, $adjustedProduct->quantity, $type);
+        }
+    }
+
     // 
 }

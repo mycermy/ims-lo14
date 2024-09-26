@@ -2,7 +2,7 @@
 
 namespace App\Orchid\Screens\Purchase\BillReturn;
 
-use App\Models\Product;
+use App\Models\Product\Product;
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchaseDetail;
 use App\Models\Purchase\PurchasePayment;
@@ -188,7 +188,7 @@ class BillReturnSingle_CreateScreen extends Screen
         $purchaseItem->update(['quantity_return' => $purchaseItem->quantity_return + $returnItem['quantity']]);
 
         // Update stock quantity in the product
-        $this->updateStock($returnItem['product_id'], $returnItem['quantity'], 'sub');
+        updateStock($returnItem['product_id'], $returnItem['quantity'], 'purchaseReturn');
 
 
         // Update purchase amounts
@@ -252,22 +252,5 @@ class BillReturnSingle_CreateScreen extends Screen
         Toast::info(__('Purchase return processed successfully.'));
 
         return redirect()->route('platform.purchases.returns', $this->purchase);
-    }
-
-    public function updateStock($productID, $purchaseQty, $type)
-    {
-        $product = Product::findOrFail($productID);
-        $updateQty = 0;
-
-        if ($type == 'add') {
-            $updateQty = $product->quantity + $purchaseQty;
-        } else if ($type == 'sub') {
-            $updateQty = $product->quantity - $purchaseQty;
-        }
-
-        // Update stock quantity in the product
-        $product->update([
-            'quantity' => $updateQty
-        ]);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Orchid\Screens\Purchase\Bill;
 
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchaseDetail;
-use App\Models\Supplier;
+use App\Models\Contact\Supplier;
 use App\Orchid\Layouts\BillListener;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

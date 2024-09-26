@@ -3,8 +3,8 @@
 namespace App\Orchid\Screens\Sales\Order;
 
 use Carbon\Carbon;
-use App\Models\Product;
-use App\Models\Customer;
+use App\Models\Product\Product;
+use App\Models\Contact\Customer;
 use Orchid\Screen\Screen;
 use App\Models\Sales\Order;
 use Illuminate\Http\Request;

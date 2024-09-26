@@ -9,7 +9,6 @@ use Orchid\Screen\Sight;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Actions\Link;
 use Orchid\Support\Facades\Layout;
-use Orchid\Screen\Components\Cells\DateTimeSplit;
 
 class ProductHistory_ListScreen extends Screen
 {
@@ -102,8 +101,8 @@ class ProductHistory_ListScreen extends Screen
                         Link::make($target->adjustment->reference)
                             ->route('platform.products.stockadjustments.view', $target->adjustment)
                     ),
-                TD::make('quantity'),
-                TD::make('type'),
+                TD::make('quantity')->width(50),
+                TD::make('type')->width(100),
             ])->title('Stock Adjustment History'),
 
             Layout::table('purchase_hist', [
