@@ -349,3 +349,6 @@ composer require orchid/platform:14.31.2
 
 ## update to orchid 14.35.1
 composer update orchid/platform --with-dependencies
+
+## update to laravel 11.24.1
+composer update laravel/framework --with-all-dependencies
