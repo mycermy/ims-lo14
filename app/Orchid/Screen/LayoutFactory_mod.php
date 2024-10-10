@@ -2,6 +2,7 @@
 namespace App\Orchid\Screen;
 
 use App\Orchid\Screen\Layouts\Columns_mod_2col;
+use App\Orchid\Screen\Layouts\Livewire;
 use App\Orchid\Screen\Layouts\Metric_mod;
 use App\Orchid\Screen\Layouts\Table_mod;
 use Orchid\Screen\LayoutFactory;
@@ -74,6 +75,12 @@ class LayoutFactory_mod extends LayoutFactory
             {
                 return $this->menus;
             }
+        };
+    }
+
+    public static function livewire (string $component, $key = null): Livewire 
+    {
+        return new class($component, $key) extends Livewire {
         };
     }
 }

@@ -5,6 +5,7 @@ namespace App\Orchid\Layouts;
 use App\Models\Contact\Contact;
 use App\Models\Product\Product;
 use App\Models\Sales\Order;
+use App\Orchid\Screens\Sales\Order\Order_EditScreen;
 use Illuminate\Http\Request;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
@@ -15,6 +16,7 @@ use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Layouts\Listener;
 use Orchid\Screen\Repository;
+use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class OrderListener extends Listener
@@ -124,6 +126,15 @@ class OrderListener extends Listener
                     ])
                     // ->empty('No select')
                     ->horizontal(),
+            ]),
+
+            Layout::table('orderDetail', [
+                TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
+                TD::make('product_id', 'Code'),
+                TD::make('product_id', 'Product')->render(fn($target) => $target->product->name ?? null),
+                TD::make('quantity', 'Qty')->alignCenter()->width(50),
+                TD::make('unit_price', 'Unit Price')->alignRight()->width(100),
+                TD::make('sub_total', 'Total')->alignRight()->width(100),
             ]),
         ];
     }

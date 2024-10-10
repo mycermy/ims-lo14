@@ -10,14 +10,18 @@ use App\Models\Sales\Order;
 use Illuminate\Http\Request;
 use App\Models\Sales\OrderItem;
 use App\Orchid\Layouts\OrderListener;
+use App\Orchid\Support\Facades\Layout_mod;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\Button;
+use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
 class Order_EditScreen extends Screen
 {
     public ?Order $order = null;
-    public $orderItem;
+    public $orderItems = [];
+    public $totalAmount = 0;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -25,9 +29,18 @@ class Order_EditScreen extends Screen
      */
     public function query(Order $order): iterable
     {
+        $this->order = $order;
+        $this->orderItems = $order->orderItems()->get()->toArray();
+        $this->calculateTotal();
+
+        Cart::instance('sale')->destroy();
+        $this->order->exists ?? Cart::instance('sale')->destroy();
+
         return [
-            'order' => $order,
-            'orderItems' => $order->orderItems()->get(),
+            'order' => $this->order,
+            'orderItems' => $this->orderItems,
+            'totalAmount' => $this->totalAmount,
+            'cartInstance' => 'sale',
         ];
     }
 
@@ -68,7 +81,10 @@ class Order_EditScreen extends Screen
     public function layout(): iterable
     {
         return [
-            OrderListener::class,
+            Layout_mod::livewire('SearchProduct'),
+            Layout_mod::livewire('ProductCart'),
+            // OrderListener::class,
+            // Layout::view('Sales.order-create'),
         ];
     }
 
@@ -141,9 +157,63 @@ class Order_EditScreen extends Screen
         }
     }
 
-    // public function asyncCalculateTotal(Repository $repository): Repository
-    // {
-    //     return $repository;
-    // }
+    public function addOrderItem()
+    {
+        $this->orderItems[] = [
+            'product_id' => '',
+            'quantity' => 1,
+            'unit_price' => 0,
+            'sub_total' => 0,
+        ];
+    }
+
+    public function removeOrderItem($index)
+    {
+        unset($this->orderItems[$index]);
+        $this->orderItems = array_values($this->orderItems);
+        $this->calculateTotal();
+    }
+
+    public function updateOrderItem($index, $field, $value)
+    {
+        $this->orderItems[$index][$field] = $value;
+
+        if ($field === 'product_id') {
+            $product = Product::find($value);
+            if ($product) {
+                $this->orderItems[$index]['unit_price'] = $product->sell_price;
+            }
+        }
+
+        $this->calculateSubTotal($index);
+        $this->calculateTotal();
+    }
+
+    private function calculateSubTotal($index)
+    {
+        $item = $this->orderItems[$index];
+        $this->orderItems[$index]['sub_total'] = $item['quantity'] * $item['unit_price'];
+    }
+
+    private function calculateTotal()
+    {
+        $this->totalAmount = array_sum(array_column($this->orderItems, 'sub_total'));
+    }
+
+    public function generatePDF()
+    {
+        // Implementation for generating PDF
+        // ...
+
+        Toast::info(__('PDF generated successfully.'));
+    }
+
+    public function generateExcel()
+    {
+        // Implementation for generating Excel
+        // ...
+
+        Toast::info(__('Excel file generated successfully.'));
+    }
 
 }

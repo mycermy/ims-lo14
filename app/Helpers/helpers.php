@@ -14,27 +14,27 @@ use Orchid\Support\Facades\Toast;
 //     }
 // }
 
-// if (!function_exists('format_currency')) {
-//     function format_currency($value, $format = true) {
-//         if (!$format) {
-//             return $value;
-//         }
+if (!function_exists('format_currency')) {
+    function format_currency($value, $format = true) {
+        if (!$format) {
+            return $value;
+        }
 
-//         $settings = settings();
-//         $position = $settings->default_currency_position;
-//         $symbol = $settings->currency->symbol;
-//         $decimal_separator = $settings->currency->decimal_separator;
-//         $thousand_separator = $settings->currency->thousand_separator;
+        // $settings = settings();
+        $position = 'prefix';//$settings->default_currency_position;
+        $symbol = 'RM';//$settings->currency->symbol;
+        $decimal_separator = '.';//$settings->currency->decimal_separator;
+        $thousand_separator = ',';//$settings->currency->thousand_separator;
 
-//         if ($position == 'prefix') {
-//             $formatted_value = $symbol . number_format((float) $value, 2, $decimal_separator, $thousand_separator);
-//         } else {
-//             $formatted_value = number_format((float) $value, 2, $decimal_separator, $thousand_separator) . $symbol;
-//         }
+        if ($position == 'prefix') {
+            $formatted_value = $symbol . number_format((float) $value, 2, $decimal_separator, $thousand_separator);
+        } else {
+            $formatted_value = number_format((float) $value, 2, $decimal_separator, $thousand_separator) . $symbol;
+        }
 
-//         return $formatted_value;
-//     }
-// }
+        return $formatted_value;
+    }
+}
 
 if (!function_exists('make_reference_id')) {
     function make_reference_id($prefix, $number) {

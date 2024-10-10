@@ -352,3 +352,37 @@ composer update orchid/platform --with-dependencies
 
 ## update to laravel 11.24.1
 composer update laravel/framework --with-all-dependencies
+
+### 
+git fetch origin
+git checkout 22-try-sales-order-livewire
+
+## update to laravel 11.26
+composer update laravel/framework --with-all-dependencies
+
+## update to orchid platform 14.36
+composer update orchid/platform --with-all-dependencies
+
+composer require anayarojo/shoppingcart
+php artisan vendor:publish --provider="Gloudemans\Shoppingcart\ShoppingcartServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Gloudemans\Shoppingcart\ShoppingcartServiceProvider"
+
+composer require barryvdh/laravel-debugbar --dev
+
+composer require livewire/livewire
+
+php artisan vendor:publish --tag=livewire:assets
+
+composer require livewire/livewire alexsabur/orchid-livewire:^5.3
+composer require livewire/livewire alexsabur/orchid-livewire:^5.3 --ignore-platform-reqs
+
+php artisan vendor:publish --tag=orchid-livewire-assets
+
+php artisan vendor:publish --provider="AlexSabur\OrchidLivewire\ServiceProvider"
+
+composer update
+
+## update composer json to latest version as per installed package
+composer bump
+
+composer validate
