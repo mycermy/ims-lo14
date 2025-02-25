@@ -12,7 +12,7 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 

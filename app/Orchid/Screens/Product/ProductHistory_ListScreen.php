@@ -3,7 +3,7 @@
 namespace App\Orchid\Screens\Product;
 
 use Carbon\Carbon;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use App\Models\Product\Product;
 use Orchid\Screen\Sight;
 use Orchid\Screen\Screen;
@@ -156,7 +156,7 @@ class ProductHistory_ListScreen extends Screen
                     ->render(fn($target) => $target->pivot->unit_price),
                 TD::make('pivot_sub_total', 'Sub Total')->alignRight()->width(150)
                     ->render(fn($target) => $target->pivot->sub_total),
-            ])->title('Order History'),
+            ])->title('Sales Order History'),
 
             // Layout::table('order_hist', [
             //     TD::make('date')->width(150)
@@ -185,7 +185,7 @@ class ProductHistory_ListScreen extends Screen
                 TD::make('unit_price', 'Unit Price')->alignRight()->width(100)
                     ->render(fn($target) => $target->orderItem->unit_price),
                 TD::make('sub_total', 'Sub Total')->alignRight()->width(150),
-            ])->title('Order Return History'),
+            ])->title('Sales Order Return History'),
             // 
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace App\Orchid\Screens\Purchase\Bill;
 
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use App\Models\Purchase\Purchase;
 use App\Models\Purchase\PurchasePayment;
 use Orchid\Screen\Screen;
@@ -47,7 +47,7 @@ class Bill_ListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Link::make(__('Add'))
+            Link::make(__('New'))
                 ->icon('bs.plus-circle')
                 ->route('platform.purchases.create'),
         ];

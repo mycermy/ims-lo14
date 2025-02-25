@@ -7,7 +7,7 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Components\Cells\DateTimeSplit;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class PurchaseReturns_ListScreen extends Screen
