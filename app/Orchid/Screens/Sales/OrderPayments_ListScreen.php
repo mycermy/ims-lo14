@@ -2,11 +2,11 @@
 
 namespace App\Orchid\Screens\Sales;
 
-use App\Models\Sales\OrderPayment;
+use App\Models\Sales\SalesPayment;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class OrderPayments_ListScreen extends Screen
@@ -19,7 +19,7 @@ class OrderPayments_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => OrderPayment::filters()->orderByDesc('created_at')->paginate(),
+            'model' => SalesPayment::filters()->orderByDesc('created_at')->paginate(),
         ];
     }
 
@@ -30,7 +30,7 @@ class OrderPayments_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Order Payments Listing ';
+        return 'Sales Payments Listing ';
     }
 
     /**

@@ -2,17 +2,20 @@
 
 namespace App\Models\Sales;
 
+use App\Finller\Invoice\FormatForPdf;
 use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
-class OrderItem extends Model
+class SalesOrderItem extends Model
 {
     use HasFactory, AsSource, Filterable;
+    use FormatForPdf;
 
     protected $guarded = ['id'];
+    protected $with = ['product', 'order'];
 
     protected $casts = [
         'date' => 'datetime:d M Y',
@@ -23,7 +26,7 @@ class OrderItem extends Model
 
     public function order()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(SalesOrder::class);
     }
 
     public function product()

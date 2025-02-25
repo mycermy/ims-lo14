@@ -3,36 +3,23 @@
 namespace App\Models\Sales;
 
 use App\Models\User;
-use App\Orchid\Presenters\OrderPaymentPresenter;
+use App\Orchid\Presenters\OrderReturnPresenter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
-class OrderPayment extends Model
+class SalesOrderReturn extends Model
 {
     use HasFactory, AsSource, Filterable;
-
-    public const STATUS_OVERDUE = 'overdue';
-    public const STATUS_UNPAID = 'unpaid';
-    public const STATUS_PARTIALLY_PAID = 'partially_paid';
-    public const STATUS_PAID = 'paid';
-    public const STATUS_OVERPAID = 'overpaid';
-
-    public const PAYMENT_CASH = 'cash';
-    public const PAYMENT_QRCODE = 'qr-code';
-    public const PAYMENT_BANK_TRANSFER = 'bank transfer';
-    public const PAYMENT_CREDIT_CARD = 'credit card';
-    public const PAYMENT_CHEQUE = 'cheque';
-    public const PAYMENT_OTHER = 'other';
-    public const PAYMENT_REFUND = 'refund';
 
     protected $guarded = ['id'];
 
     protected $casts = [
         'date' => 'datetime:d M Y',
-        'amount' => 'decimal:2',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'total_amount' => 'decimal:2',
     ];
 
 
@@ -44,7 +31,12 @@ class OrderPayment extends Model
     }
 
     public function order() {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(SalesOrder::class);
+    }
+
+    public function returnItems()
+    {
+        return $this->hasMany(SalesOrderReturnItem::class);
     }
 
     // guna casts pun boleh tapi berguna pada input dalam page edit
@@ -54,6 +46,6 @@ class OrderPayment extends Model
     }
 
     public function presenter() {
-        return new OrderPaymentPresenter($this);
+        return new OrderReturnPresenter($this);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Supplier;
+use App\Models\Contact\Supplier;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->string('reference');
+            $table->string('reference')->unique();
             $table->string('supplier_name');
             $table->decimal('tax_percentage')->default(0);
             $table->decimal('tax_amount', 20)->default(0.00);

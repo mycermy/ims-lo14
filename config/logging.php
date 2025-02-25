@@ -72,6 +72,12 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
+        
+        'pdf_errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/pdf_errors.log'),
+            'level' => 'error',
+        ],
 
         'slack' => [
             'driver' => 'slack',

@@ -8,18 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
-class OrderReturnItem extends Model
+class SalesOrderReturnItem extends Model
 {
     use HasFactory, AsSource, Filterable;
 
     protected $guarded = ['id'];
 
     public function orderReturn() {
-        return $this->belongsTo(OrderReturn::class);
+        return $this->belongsTo(SalesOrderReturn::class);
     }
 
     public function orderItem() {
-        return $this->belongsTo(OrderItem::class);
+        return $this->belongsTo(SalesOrderItem::class);
     }
 
     public function product() {

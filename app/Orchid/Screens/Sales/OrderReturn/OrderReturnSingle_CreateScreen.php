@@ -2,11 +2,11 @@
 
 namespace App\Orchid\Screens\Sales\OrderReturn;
 
-use App\Models\Sales\Order;
-use App\Models\Sales\OrderItem;
-use App\Models\Sales\OrderPayment;
-use App\Models\Sales\OrderReturn;
-use App\Models\Sales\OrderReturnItem;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesOrderItem;
+use App\Models\Sales\SalesPayment;
+use App\Models\Sales\SalesOrderReturn;
+use App\Models\Sales\SalesOrderReturnItem;
 use App\Rules\ValueNotExceed;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
@@ -15,21 +15,21 @@ use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
 class OrderReturnSingle_CreateScreen extends Screen
 {
-    public ?Order $order = null;
-    public ?OrderItem $orderDetail = null;
-    public ?OrderReturn $return = null;
+    public ?SalesOrder $order = null;
+    public ?SalesOrderItem $orderDetail = null;
+    public ?SalesOrderReturn $return = null;
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(Order $order, OrderItem $orderDetail, OrderReturn $return): iterable
+    public function query(SalesOrder $order, SalesOrderItem $orderDetail, SalesOrderReturn $return): iterable
     {
         return [
             'order' => $order,
@@ -46,7 +46,7 @@ class OrderReturnSingle_CreateScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Order: ' . $this->order->reference . ' >> ' .
+        return 'Sales Order: ' . $this->order->reference . ' >> ' .
             ($this->return->exists
                 ? 'Edit Return: ' . $this->return->reference
                 : 'New Order Return');
@@ -79,7 +79,7 @@ class OrderReturnSingle_CreateScreen extends Screen
      */
     public function layout(): iterable
     {
-        $number = OrderReturn::max('id') + 1;
+        $number = SalesOrderReturn::max('id') + 1;
         $refid = make_reference_id('ODRN', $number);
         $harini = now()->toDateString(); //dd($harini);
 
@@ -149,7 +149,7 @@ class OrderReturnSingle_CreateScreen extends Screen
         ];
     }
 
-    public function store(Request $request, OrderReturn $orderReturn)
+    public function store(Request $request, SalesOrderReturn $orderReturn)
     {
         $request->validate([
             'return.reference' => 'required|string|max:255',
@@ -168,7 +168,7 @@ class OrderReturnSingle_CreateScreen extends Screen
 
         $subTotal = $returnItem['quantity'] * $returnItem['unit_price'];
         // $subTotal = $request->input('returnItem.quantity') * $request->input('orderItem.unit_price');
-        $newReturnItem = new OrderReturnItem($returnItem);
+        $newReturnItem = new SalesOrderReturnItem($returnItem);
         $newReturnItem->sub_total = $subTotal;
 
 
@@ -182,8 +182,8 @@ class OrderReturnSingle_CreateScreen extends Screen
         // Associate the new OrderReturnItem with the $orderReturn model
         $orderReturn->returnItems()->save($newReturnItem);
 
-        // update OrderItem Quantity Return
-        $orderItem = OrderItem::findOrFail($returnItem['order_item_id']);
+        // update SalesOrderItem Quantity Return
+        $orderItem = SalesOrderItem::findOrFail($returnItem['order_item_id']);
         $orderItem->update(['quantity_return' => $orderItem->quantity_return + $returnItem['quantity']]);
 
         // Update stock quantity in the product
@@ -200,7 +200,7 @@ class OrderReturnSingle_CreateScreen extends Screen
         // can conclude that Total => Total - PR, Due => Due - PR -> also mean Due after PR
         // (Due - PR) = (Total - PR) - Paid
         // 
-        $order = Order::findOrFail($request->input('return.order_id'));
+        $order = SalesOrder::findOrFail($request->input('return.order_id'));
 
         $totalAmountReturn = $order->total_amount_return + $subTotal;
         $newTotalAmount = $order->total_amount - $totalAmountReturn;
@@ -216,11 +216,11 @@ class OrderReturnSingle_CreateScreen extends Screen
         }
 
         $paymentStatus = match (true) {
-            $dueAmount == 0 && $newTotalAmount == 0 => OrderPayment::PAYMENT_REFUND,
-            $dueAmount == 0 && $newPaidAmount == $newTotalAmount => OrderPayment::STATUS_PAID,
-            $dueAmount == $newTotalAmount => OrderPayment::STATUS_UNPAID,
-            $dueAmount > 0 => OrderPayment::STATUS_PARTIALLY_PAID,
-            default => OrderPayment::STATUS_OVERPAID,
+            $dueAmount == 0 && $newTotalAmount == 0 => SalesPayment::PAYMENT_REFUND,
+            $dueAmount == 0 && $newPaidAmount == $newTotalAmount => SalesPayment::STATUS_PAID,
+            $dueAmount == $newTotalAmount => SalesPayment::STATUS_UNPAID,
+            $dueAmount > 0 => SalesPayment::STATUS_PARTIALLY_PAID,
+            default => SalesPayment::STATUS_OVERPAID,
         };
 
         $order->update([
@@ -229,21 +229,21 @@ class OrderReturnSingle_CreateScreen extends Screen
             'paid_amount' => $newPaidAmount,
             'due_amount' => $dueAmount,
             'payment_status' => $paymentStatus,
-            'status' => $paymentStatus == OrderPayment::STATUS_PAID ? Order::STATUS_COMPLETED : $order->status,
+            'status' => $paymentStatus == SalesPayment::STATUS_PAID ? SalesOrder::STATUS_COMPLETED : $order->status,
         ]);
 
-        // Record the payment adjustment in OrderPayment
+        // Record the payment adjustment in SalesPayment
         if ($refundAmount < 0) {
-            $number = OrderPayment::max('id') + 1;
+            $number = SalesPayment::max('id') + 1;
             $refid = make_reference_id('OPRT', $number);
             $harini = now()->toDateString();
-            OrderPayment::create([
+            SalesPayment::create([
                 'order_id' => $order->id,
                 'reference' => $refid,
                 'date' => $harini,
                 'amount' => $refundAmount, // Store the refund amount as a negative value
-                'payment_method' => OrderPayment::PAYMENT_REFUND,
-                'note' => 'Refund from Order Return #' . $orderReturn->reference,
+                'payment_method' => SalesPayment::PAYMENT_REFUND,
+                'note' => 'Refund from Sales Order Return #' . $orderReturn->reference,
                 'created_by' => auth()->id(),
             ]);
         }

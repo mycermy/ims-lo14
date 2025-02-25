@@ -37,8 +37,12 @@ class BillListener extends Listener
      */
     protected function layouts(): iterable
     {
-        $number = Purchase::max('id') + 1;
-        $refid = make_reference_id('PR', $number);
+        // $number = Purchase::max('id') + 1;
+        // Count the number of service jobs created in the current year
+        $currentYear = now()->year;
+        $yearlyCount = Purchase::whereYear('created_at', $currentYear)->count() + 1;
+        // Generate reference ID using your existing helper function
+        $refid = make_reference_id('PR', $yearlyCount);
         // $harini = now()->toDateString(); //dd($harini);
         $harini = now()->format('d M Y'); //dd($harini);
 
