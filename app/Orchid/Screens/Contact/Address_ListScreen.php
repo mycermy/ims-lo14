@@ -4,7 +4,7 @@ namespace App\Orchid\Screens\Contact;
 
 use App\Models\Contact\Address;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class Address_ListScreen extends Screen

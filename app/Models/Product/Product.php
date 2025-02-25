@@ -3,16 +3,16 @@
 namespace App\Models\Product;
 
 use App\Models\User;
-use App\Models\Sales\Order;
+use App\Models\Sales\SalesOrder;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Orchid\Filters\Types\Like;
-use App\Models\Sales\OrderItem;
+use App\Models\Sales\SalesOrderItem;
 use Orchid\Filters\Types\Where;
 use App\Models\Purchase\PurchaseDetail;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Purchase\PurchaseReturnItem;
-use App\Models\Sales\OrderReturnItem;
+use App\Models\Sales\SalesOrderReturnItem;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,8 +24,8 @@ class Product extends Model
     protected $perPage = 15;
 
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d',
-        'updated_at' => 'datetime:Y-m-d',
+        'created_at' => 'datetime:d M Y',
+        'updated_at' => 'datetime:d M Y',
         'sell_price' => 'decimal:2',
     ];
 
@@ -102,7 +102,7 @@ class Product extends Model
      */
     public function orders()
     {
-        return $this->belongsToMany(Order::class, OrderItem::class)->withPivot('quantity', 'unit_price', 'sub_total');
+        return $this->belongsToMany(SalesOrder::class, SalesOrderItem::class)->withPivot('quantity', 'unit_price', 'sub_total');
     }
 
     /**
@@ -110,7 +110,7 @@ class Product extends Model
      */
     public function orderItems()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(SalesOrderItem::class);
     }
 
     /**
@@ -118,7 +118,7 @@ class Product extends Model
      */
     public function orderReturnItems()
     {
-        return $this->hasMany(OrderReturnItem::class);
+        return $this->hasMany(SalesOrderReturnItem::class);
     }
 
     /**

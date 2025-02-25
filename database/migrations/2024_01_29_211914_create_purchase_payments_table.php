@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Purchase;
+use App\Models\Purchase\Purchase;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('purchase_payments', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->string('reference');
+            $table->string('reference')->unique();
             $table->decimal('amount', 20);
             $table->string('payment_method');
             $table->text('note')->nullable();

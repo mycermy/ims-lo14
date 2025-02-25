@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Product;
-use App\Models\PurchaseDetail;
-use App\Models\PurchaseReturn;
+use App\Models\Product\Product;
+use App\Models\Purchase\PurchaseDetail;
+use App\Models\Purchase\PurchaseReturn;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

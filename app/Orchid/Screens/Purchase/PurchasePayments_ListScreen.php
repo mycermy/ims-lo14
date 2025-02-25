@@ -6,7 +6,7 @@ use App\Models\Purchase\PurchasePayment;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class PurchasePayments_ListScreen extends Screen

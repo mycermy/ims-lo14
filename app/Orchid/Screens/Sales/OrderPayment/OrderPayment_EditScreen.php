@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Sales\OrderPayment;
 
-use App\Models\Sales\Order;
-use App\Models\Sales\OrderPayment;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesPayment;
 use App\Rules\AmountNotExceedDue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,14 +21,14 @@ use Orchid\Support\Facades\Toast;
 class OrderPayment_EditScreen extends Screen
 {
     // built-in order id as default. 
-    public ?Order $order = null;
-    public ?OrderPayment $payment  = null;
+    public ?SalesOrder $order = null;
+    public ?SalesPayment $payment  = null;
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(Order $order, OrderPayment $payment): iterable
+    public function query(SalesOrder $order, SalesPayment $payment): iterable
     {
         return [
             'order' => $order,
@@ -80,7 +80,7 @@ class OrderPayment_EditScreen extends Screen
      */
     public function layout(): iterable
     {
-        $number = OrderPayment::max('id') + 1;
+        $number = SalesPayment::max('id') + 1;
         $refid = make_reference_id('SP', $number);
         $harini = now()->toDateString(); //dd($harini);
 
@@ -116,13 +116,13 @@ class OrderPayment_EditScreen extends Screen
                     Select::make('payment.payment_method')
                         ->title('Payment Method')
                         ->options([
-                            OrderPayment::PAYMENT_CASH => OrderPayment::PAYMENT_CASH,
-                            OrderPayment::PAYMENT_QRCODE => OrderPayment::PAYMENT_QRCODE,
-                            OrderPayment::PAYMENT_BANK_TRANSFER => OrderPayment::PAYMENT_BANK_TRANSFER,
-                            OrderPayment::PAYMENT_CREDIT_CARD => OrderPayment::PAYMENT_CREDIT_CARD,
-                            OrderPayment::PAYMENT_CHEQUE => OrderPayment::PAYMENT_CHEQUE,
-                            OrderPayment::PAYMENT_OTHER => OrderPayment::PAYMENT_OTHER,
-                            OrderPayment::PAYMENT_REFUND => OrderPayment::PAYMENT_REFUND,
+                            SalesPayment::PAYMENT_CASH => SalesPayment::PAYMENT_CASH,
+                            SalesPayment::PAYMENT_QRCODE => SalesPayment::PAYMENT_QRCODE,
+                            SalesPayment::PAYMENT_BANK_TRANSFER => SalesPayment::PAYMENT_BANK_TRANSFER,
+                            SalesPayment::PAYMENT_CREDIT_CARD => SalesPayment::PAYMENT_CREDIT_CARD,
+                            SalesPayment::PAYMENT_CHEQUE => SalesPayment::PAYMENT_CHEQUE,
+                            SalesPayment::PAYMENT_OTHER => SalesPayment::PAYMENT_OTHER,
+                            SalesPayment::PAYMENT_REFUND => SalesPayment::PAYMENT_REFUND,
                         ])
                         ->empty('No select')
                         ->required(),
@@ -145,7 +145,7 @@ class OrderPayment_EditScreen extends Screen
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request, OrderPayment $payment)
+    public function store(Request $request, SalesPayment $payment)
     {
         // kalo edit
         // if ($this->order->exists) {
@@ -176,27 +176,27 @@ class OrderPayment_EditScreen extends Screen
 
 
         // update order
-        $order = Order::findOrFail($request->input('payment.order_id'));
+        $order = SalesOrder::findOrFail($request->input('payment.order_id'));
 
         $paidAmount = $order->paid_amount + $request->input('payment.amount');
 
         $dueAmount = $order->due_amount - $request->input('payment.amount');
 
         $paymentStatus = match (true) {
-            $dueAmount == $order->total_amount => OrderPayment::STATUS_UNPAID,
-            $dueAmount > 0 => OrderPayment::STATUS_PARTIALLY_PAID,
-            $dueAmount < 0 => OrderPayment::STATUS_OVERPAID,
-            default => OrderPayment::STATUS_PAID,
+            $dueAmount == $order->total_amount => SalesPayment::STATUS_UNPAID,
+            $dueAmount > 0 => SalesPayment::STATUS_PARTIALLY_PAID,
+            $dueAmount < 0 => SalesPayment::STATUS_OVERPAID,
+            default => SalesPayment::STATUS_PAID,
         };
 
         $order->update([
             'paid_amount' => $paidAmount,
             'due_amount' => $dueAmount,
             'payment_status' => $paymentStatus,
-            'status' => $paymentStatus == OrderPayment::STATUS_PAID ? Order::STATUS_COMPLETED : $order->status,
+            'status' => $paymentStatus == SalesPayment::STATUS_PAID ? SalesOrder::STATUS_COMPLETED : $order->status,
         ]);
 
-        Toast::info(__('Order Payment was saved.'));
+        Toast::info(__('Sales Payment was saved.'));
 
         return redirect()->route('platform.orders.payments', $order);
     }

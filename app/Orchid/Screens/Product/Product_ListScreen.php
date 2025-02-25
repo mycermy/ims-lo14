@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Product;
 
 use App\Models\Product\Category;
 use App\Models\Product\Product;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
@@ -75,8 +76,7 @@ class Product_ListScreen extends Screen
                 TD::make('id', '#')->render(fn($target, object $loop) => $loop->iteration + (getPage() - 1) * $target->getPerPage()),
                 TD::make('category_id', 'Category')
                     ->filter(Relation::make()->fromModel(Category::class, 'name'))
-                    ->render(fn ($target) => $target->category->name ?? null)
-                    ->width('auto')
+                    ->render(fn($target) => $target->category->name ?? null)
                     ->class('text-break'),
                 TD::make('code')->filter()->sort()
                     ->render(
@@ -90,17 +90,17 @@ class Product_ListScreen extends Screen
                         }
                     ),
                 TD::make('part_number', 'Part Number')->filter()->sort(),
-                TD::make('name')->filter()->sort()->width('auto')->class('text-break'),
+                TD::make('name')->filter()->sort()->class('text-break'),
                 TD::make('quantity')->alignRight(),
                 TD::make('sell_price', 'Sell Price')->alignRight(),
-                TD::make('compatible')->filter()->sort()->width('auto'),
+                TD::make('compatible')->filter()->sort(),
                 // TD::make('created_by')->render(fn($target) => $target->createdBy->name),
                 // TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')
                     ->canSee(Auth::user()->hasAnyAccess(['platform.systems.editor', 'platform.items.editor']))
                     ->width('10px')
                     ->render(
-                        fn ($target) =>
+                        fn($target) =>
                         $this->getTableActions($target)
                             ->alignCenter()
                             ->autoWidth()
@@ -146,6 +146,14 @@ class Product_ListScreen extends Screen
             DropDown::make()
                 ->icon('three-dots-vertical')
                 ->list([
+                    Button::make(__('Add to Order'))
+                        ->icon('bs.plus-circle')
+                        ->confirm(__('This will send to Sales Order form.'))
+                        ->method('addOrderItem', [
+                            'product_id' => $target->id,
+                        ])
+                        ->canSee(!$target->trashed()),
+
                     Link::make(__('View'))
                         ->icon('eye')
                         // ->canSee($this->can('view'))
@@ -194,5 +202,29 @@ class Product_ListScreen extends Screen
         $productToRemove->delete();
 
         Toast::info(__('Product was removed'));
+    }
+
+    /**
+     * Add an item to the order.
+     *
+     * @param Order $order
+     * @param int $productId
+     * @param int $quantity
+     * @param float $price
+     */
+    public function addOrderItem(Request $request)
+    {
+        $instance = 'order';
+        $quantity = 1;
+        $product = Product::find($request->get('product_id'));
+
+        Cart::instance($instance)->add(
+            $product->id,
+            $product->name,
+            $quantity,
+            $product->sell_price,
+        );
+
+        // return redirect()->back();
     }
 }

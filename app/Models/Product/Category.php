@@ -47,35 +47,45 @@ class Category extends Model
     /**
      * @return BelongsTo
      */
-    public function parent() {
-        return $this->belongsTo(Category::class, 'parent_id');
+    public function parent()
+    // public function parent(): BelongsTo
+    {
+        // return $this->belongsTo(Category::class, 'parent_id');
+        return $this->belongsTo(__CLASS__, 'parent_id')
+            ->whereKeyNot($this->getKey());
     }
 
     /**
      * @return HasMany
      */
-    public function children(){
-        return $this->hasMany(Category::class, 'parent_id');
+    public function children()
+    // public function children(): HasMany
+    {
+        // return $this->hasMany(Category::class, 'parent_id');
+        return $this->hasMany(__CLASS__, 'parent_id');
     }
 
     /**
      * @return BelongsTo
      */
-    public function createdBy() {
+    public function createdBy()
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
      * @return BelongsTo
      */
-    public function updatedBy() {
+    public function updatedBy()
+    {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
     /**
      * @return HasMany
      */
-    public function products(){
+    public function products()
+    {
         return $this->hasMany(Product::class);
     }
 

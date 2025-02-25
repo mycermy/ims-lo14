@@ -11,7 +11,7 @@ use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
@@ -74,7 +74,7 @@ class StockAdjustment_ListScreen extends Screen
                         Link::make($target->reference)
                             ->route('platform.products.stockadjustments.view', $target)
                     ),
-                TD::make('note')->width('auto'),
+                TD::make('note'),
                 TD::make('adjusted_products_count', 'ProdCount')->alignCenter(),
                 TD::make('updated_by')->render(fn($target) => $target->updatedBy->name ?? null),
                 TD::make('Actions')

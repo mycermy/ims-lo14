@@ -2,8 +2,8 @@
 
 namespace App\Orchid\Screens\Sales\OrderPayment;
 
-use App\Models\Sales\Order;
-use App\Models\Sales\OrderPayment;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesPayment;
 use App\Orchid\Screens\Sales\TabMenuOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,25 +11,25 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
 class OrderPayment_ListScreen extends Screen
 {
-    public ?Order $order = null;
+    public ?SalesOrder $order = null;
     public $orderPayment;
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(Order $order): iterable
+    public function query(SalesOrder $order): iterable
     {
         return [
             'order' => $order,
             'orderPayment' => $order->orderPayments()->get(),
-            'order_model' => Order::where('id', $order->id)->get(),
+            'order_model' => SalesOrder::where('id', $order->id)->get(),
         ];
     }
 
@@ -40,7 +40,7 @@ class OrderPayment_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Order: ' . $this->order->reference;
+        return 'Sales Order: ' . $this->order->reference;
     }
 
     /**
@@ -97,9 +97,9 @@ class OrderPayment_ListScreen extends Screen
                 TD::make('due_amount', 'Due Amount')->alignRight(),
                 TD::make('payment_status', 'Payment Status')->alignCenter()
                     ->render(function ($target) {
-                        if ($target->payment_status == OrderPayment::STATUS_PAID) {
+                        if ($target->payment_status == SalesPayment::STATUS_PAID) {
                             $button = 'text-bg-success text-white';
-                        } elseif ($target->payment_status == OrderPayment::PAYMENT_REFUND) {
+                        } elseif ($target->payment_status == SalesPayment::PAYMENT_REFUND) {
                             $button = 'text-bg-warning';
                         } else {
                             $button = 'text-bg-danger';
@@ -128,7 +128,7 @@ class OrderPayment_ListScreen extends Screen
                             // ->autoWidth()
                             ->render()
                     ),
-            ]), //->title('Order Payments'),
+            ]), //->title('Sales Payments'),
         ];
     }
 
@@ -163,7 +163,7 @@ class OrderPayment_ListScreen extends Screen
     public function removePayment(Request $request)
     {
         // rollback paid amount in order table
-        $orderPayment = OrderPayment::findOrFail($request->get('id'));
+        $orderPayment = SalesPayment::findOrFail($request->get('id'));
         $order = $orderPayment->order;
 
         $paid_amount = $order->paid_amount - $orderPayment->amount;
@@ -171,30 +171,30 @@ class OrderPayment_ListScreen extends Screen
         $due_amount = $order->due_amount + $orderPayment->amount;
 
         $payment_status = match (true) {
-            $due_amount == $order->total_amount => OrderPayment::STATUS_UNPAID,
-            $due_amount > 0 => OrderPayment::STATUS_PARTIALLY_PAID,
-            $due_amount < 0 => OrderPayment::STATUS_OVERPAID,
-            default => OrderPayment::STATUS_PAID,
+            $due_amount == $order->total_amount => SalesPayment::STATUS_UNPAID,
+            $due_amount > 0 => SalesPayment::STATUS_PARTIALLY_PAID,
+            $due_amount < 0 => SalesPayment::STATUS_OVERPAID,
+            default => SalesPayment::STATUS_PAID,
         };
 
         $order->update([
             'paid_amount' => $paid_amount,
             'due_amount' => $due_amount,
             'payment_status' => $payment_status,
-            'status' => $payment_status != OrderPayment::STATUS_PAID ? Order::STATUS_APPROVED : $order->status,
+            'status' => $payment_status != SalesPayment::STATUS_PAID ? SalesOrder::STATUS_APPROVED : $order->status,
         ]);
 
         // parent
         $orderPayment->delete();
 
-        Toast::info(__('Order Payment was deleted.'));
+        Toast::info(__('Sales Order Payment was deleted.'));
     }
 
     public function showPaymentMenu($target)
     {
         if (
-            $target->status == Order::STATUS_APPROVED &&
-            !in_array($target->payment_status, [OrderPayment::STATUS_PAID, OrderPayment::STATUS_OVERPAID])
+            $target->status == SalesOrder::STATUS_APPROVED &&
+            !in_array($target->payment_status, [SalesPayment::STATUS_PAID, SalesPayment::STATUS_OVERPAID])
         ) {
             return true;
         }

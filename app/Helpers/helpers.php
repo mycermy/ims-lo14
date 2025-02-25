@@ -84,7 +84,7 @@ if (!function_exists('updateStock')) {
 
     function calculateNewQuantity(int $currentQuantity, int $changeQuantity, string $type): int
     {
-        $incrementTypes = ['add', 'purchase', 'salesReturn', 'salesRemove'];
+        $incrementTypes = ['add', 'purchase','salesReturn', 'salesRevoke', 'salesRemove'];
         $decrementTypes = ['sub', 'purchaseReturn', 'purchaseRevoke', 'purchaseRemove', 'sales'];
 
         return match (true) {

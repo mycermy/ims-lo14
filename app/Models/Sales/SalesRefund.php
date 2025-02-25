@@ -3,23 +3,24 @@
 namespace App\Models\Sales;
 
 use App\Models\User;
-use App\Orchid\Presenters\OrderReturnPresenter;
+use App\Orchid\Presenters\OrderPaymentPresenter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
-class OrderReturn extends Model
+class SalesRefund extends Model
 {
     use HasFactory, AsSource, Filterable;
+
+    public const PAYMENT_REFUND = 'refund';
 
     protected $guarded = ['id'];
 
     protected $casts = [
         'date' => 'datetime:d M Y',
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'total_amount' => 'decimal:2',
+        'amount' => 'decimal:2',
     ];
 
 
@@ -31,12 +32,7 @@ class OrderReturn extends Model
     }
 
     public function order() {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function returnItems()
-    {
-        return $this->hasMany(OrderReturnItem::class);
+        return $this->belongsTo(SalesOrder::class);
     }
 
     // guna casts pun boleh tapi berguna pada input dalam page edit
@@ -46,6 +42,6 @@ class OrderReturn extends Model
     }
 
     public function presenter() {
-        return new OrderReturnPresenter($this);
+        return new OrderPaymentPresenter($this);
     }
 }

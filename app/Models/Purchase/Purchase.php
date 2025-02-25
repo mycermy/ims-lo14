@@ -2,6 +2,7 @@
 
 namespace App\Models\Purchase;
 
+use App\Models\Contact\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,11 +21,12 @@ class Purchase extends Model
 
     protected $guarded = ['id'];
     protected $perPage = 15;
+    protected $with = ['supplier'];
 
     protected $casts = [
         'date' => 'datetime:d M Y',
-        'created_at' => 'datetime:Y-m-d',
-        'updated_at' => 'datetime:Y-m-d',
+        'created_at' => 'datetime:d M Y',
+        'updated_at' => 'datetime:d M Y',
         'total_amount' => 'decimal:2',
     ];
 
@@ -46,8 +48,14 @@ class Purchase extends Model
     /**
      * @return BelongsTo
      */
-    public function updatedBy() {
+    public function updatedBy()
+    {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public static function boot()
@@ -55,8 +63,13 @@ class Purchase extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $number = Purchase::max('id') + 1;
-            $model->reference = make_reference_id('PR', $number);
+            if (blank($model->reference)) {
+                // $number = Purchase::max('id') + 1;
+                // Count the number of service jobs created in the current year
+                $currentYear = now()->year;
+                $yearlyCount = self::whereYear('created_at', $currentYear)->count() + 1;
+                $model->reference = make_reference_id('PD', $yearlyCount);
+            }
         });
     }
 

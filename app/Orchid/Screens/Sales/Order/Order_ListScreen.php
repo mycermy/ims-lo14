@@ -2,11 +2,12 @@
 
 namespace App\Orchid\Screens\Sales\Order;
 
-use App\Models\Sales\Order;
-use App\Models\Sales\OrderPayment;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesPayment;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Support\Facades\Layout;
 
 class Order_ListScreen extends Screen
@@ -19,7 +20,7 @@ class Order_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Order::filters()->orderByDesc('date')->orderByDesc('id')->paginate(),
+            'model' => SalesOrder::filters()->orderByDesc('date')->orderByDesc('id')->paginate(),
         ];
     }
 
@@ -30,7 +31,7 @@ class Order_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Orders Listing';
+        return 'Sales Orders Listing';
     }
 
     /**
@@ -41,7 +42,7 @@ class Order_ListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Link::make(__('Add'))
+            Link::make(__('New'))
                 ->icon('bs.plus-circle')
                 ->route('platform.orders.create'),
         ];
@@ -59,8 +60,8 @@ class Order_ListScreen extends Screen
                 TD::make('status')->alignCenter()
                     ->render(
                         function ($target) {
-                            $class = ($target->status == Order::STATUS_APPROVED
-                                || ($target->status == Order::STATUS_COMPLETED && $target->payment_status == OrderPayment::STATUS_PAID))
+                            $class = ($target->status == SalesOrder::STATUS_APPROVED
+                                || ($target->status == SalesOrder::STATUS_COMPLETED && $target->payment_status == SalesPayment::STATUS_PAID))
                                 ? 'text-bg-success text-white'
                                 : 'text-bg-danger';
                             return Link::make($target->status)
@@ -81,9 +82,9 @@ class Order_ListScreen extends Screen
                 TD::make('due_amount', 'Due Amount')->alignRight(),
                 TD::make('payment_status', 'Payment Status')->alignCenter()
                     ->render(function ($target) {
-                        if ($target->payment_status == OrderPayment::STATUS_PAID) {
+                        if ($target->payment_status == SalesPayment::STATUS_PAID) {
                             $button = 'text-bg-success text-white';
-                        } elseif ($target->payment_status == OrderPayment::PAYMENT_REFUND) {
+                        } elseif ($target->payment_status == SalesPayment::PAYMENT_REFUND) {
                             $button = 'text-bg-warning';
                         } else {
                             $button = 'text-bg-danger';
@@ -104,6 +105,12 @@ class Order_ListScreen extends Screen
                 //             ->autoWidth()
                 //             ->render()
                 //     ),
+                TD::make('PDF')->render(function ($target) {
+                    return Link::make('')
+                        ->route('platform.orders.pdf.stream', ['order' => $target->id])
+                        ->target('_blank')
+                        ->icon('bs.file-pdf');
+                }),
             ]),
         ];
     }

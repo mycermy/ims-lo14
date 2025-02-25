@@ -50,8 +50,12 @@ class OrderListener extends Listener
      */
     protected function layouts(): iterable
     {
-        $number = Order::max('id') + 1;
-        $refid = make_reference_id('INV', $number);
+        // $number = Order::max('id') + 1;
+        // Count the number of service jobs created in the current year
+        $currentYear = now()->year;
+        $yearlyCount = Order::whereYear('created_at', $currentYear)->count() + 1;
+        // Generate reference ID using your existing helper function
+        $refid = make_reference_id('INV', $yearlyCount);
         // $harini = now()->toDateString(); //dd($harini);
         $harini = now()->format('d M Y'); //dd($harini);
 

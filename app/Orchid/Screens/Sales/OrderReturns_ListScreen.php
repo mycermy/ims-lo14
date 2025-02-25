@@ -2,12 +2,12 @@
 
 namespace App\Orchid\Screens\Sales;
 
-use App\Models\Sales\OrderReturn;
+use App\Models\Sales\SalesOrderReturn;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Components\Cells\DateTimeSplit;
 use Orchid\Screen\Layouts\Persona;
 use Orchid\Screen\Screen;
-use Orchid\Screen\TD;
+use App\Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 
 class OrderReturns_ListScreen extends Screen
@@ -20,7 +20,7 @@ class OrderReturns_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => OrderReturn::filters()->orderByDesc('created_at')->paginate(),
+            'model' => SalesOrderReturn::filters()->orderByDesc('created_at')->paginate(),
         ];
     }
 
@@ -31,7 +31,7 @@ class OrderReturns_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Order Returns Listing ';
+        return 'Sales Returns Listing ';
     }
 
     /**
